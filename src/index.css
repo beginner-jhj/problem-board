@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+button{
+  cursor: pointer;
+}
+
+.category{
+  padding: 2px 4px;
+  border-radius: 4px;
+  background-color: gray;
+  color: white;
+  cursor: pointer;
+}
+
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #1a4cbf;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+  }
+
+  @keyframes rotation {
+  0% {
+      transform: rotate(0deg);
+  }
+  100% {
+      transform: rotate(360deg);
+  }
+  }
+
+  .base-input-design{
+    padding: 2px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+  }
