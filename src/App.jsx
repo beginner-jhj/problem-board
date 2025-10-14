@@ -77,7 +77,7 @@ function MyInfo() {
         myProblems.map((problem, index) => (
           <div key={index} className="flex flex-col">
             <Link to={`/problem/${problem.id}`}>
-              <h3 className="text-base">{problem.title}</h3>
+              <h3 className="text-base">{problem.title.length>20?problem.title.slice(0,20)+'...':problem.title}</h3>
             </Link>
             <p className="muted text-sm">
               Views {problem.views} | Empathy {problem.empathy}{" "} | Watching {problem.watching}{" "}<span className="cursor-pointer" onClick={()=>navigate(`/edit/${problem.id}`)}>✎</span>
