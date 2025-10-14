@@ -212,7 +212,7 @@ function CommentSection({ problemId, setError, ownerId, onStatusChange }) {
   });
 
   const renderThread = (node, depth = 0) => {
-    const key = node.id;
+    const key = node.id || Date.now().toString();
     const children = childrenMap.get(key) || [];
     return (
       <div key={key} className={depth > 0 ? "pl-6 border-l" : ""}>
