@@ -3,14 +3,7 @@ import { useEffect, useState} from "react";
 import { addProblem } from "./firebase/problemHandler";
 import { useNavigate } from "react-router";
 import { useAuth } from "./context/AuthContext";
-import {create} from "zustand";
-
-const useFeatureStore = create((set)=>({
-  feature:"",
-  setFeature:(feature)=>set({feature}),
-  features:[""],
-  setFeatures:(features)=>set({features})
-}))
+import FeatureInput from "./components/FeatureInput";
 
 function PostProblem() {
   const [title, setTitle] = useState("");
@@ -31,6 +24,10 @@ function PostProblem() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      if (!title || !description || !category || !frequency) {
+        alert("Please fill in all fields");
+        return;
+      }
       const docRef = await addProblem(
         {
           title,
@@ -57,6 +54,7 @@ function PostProblem() {
           <div className="flex flex-col">
             <h1>*Title</h1>
             <input
+            required
               autoFocus
               type="text"
               className="base-input-design"
@@ -68,6 +66,7 @@ function PostProblem() {
           <div className="flex flex-col">
             <h1>*Problem</h1>
             <textarea
+            required
               className="base-input-design"
               placeholder="Please describe your problem specifically."
               value={description}
@@ -115,7 +114,7 @@ function PostProblem() {
             </div>
           </div>
           <div className="flex flex-col">
-            <h1>How often?</h1>
+            <h1>*How often?</h1>
             <div className="flex gap-2">
               <input
                 type="radio"
@@ -156,9 +155,14 @@ function PostProblem() {
             </div>
             <div className="flex flex-col gap-2">
               {features.map((feature, index) => (
-                <FeatureInput key={index} index={index + 1} setFeatures={setFeatures} features={features}/>
+                <FeatureInput key={index} index={index + 1} setFeatures={setFeatures} features={features} />
               ))}
             </div>
+          </div>
+          <div className="flex items-center justify-end gap-4 muted text-sm">
+            <span>Views: 0</span>
+            <span>Empathy: 0</span>
+            <span>Watching: 0</span>
           </div>
           <button
             className="p-2 bg-blue-500 text-white rounded-md"
@@ -169,32 +173,6 @@ function PostProblem() {
         </form>
       </main>
     </>
-  );
-}
-
-function FeatureInput({index, setFeatures, features}) {
-  const [feature,setFeature] = useState(features[index-1]);
-
-  useEffect(()=>{
-    setFeature(features[index-1]);
-  },[features])
-
-  return (
-    <div className="flex items-center gap-2">
-      <h1>{index}</h1>
-      <input type="text" 
-      value={feature}
-      onChange={(e)=>{
-        setFeatures((prev)=>{
-          const newFeatures = [...prev];
-          newFeatures[index-1] = e.target.value;
-          return newFeatures;
-        })
-      }}className="base-input-design w-full" placeholder="eg) Photo-based wardrobe manager with outfit combination generator" />
-      <span onClick={()=>setFeatures((prev)=>prev.filter((_,i)=>i!==index-1))} className="text-2xl text-center cursor-pointer">
-        -
-      </span>
-    </div>
   );
 }
 

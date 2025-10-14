@@ -1,87 +1,258 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useAuth } from "./context/AuthContext";
-import { getAllDocs } from "./firebase/problemHandler";
+import {
+  getAllDocs,
+  getDocsByCategory,
+  getDocsByUserId,
+} from "./firebase/problemHandler";
 import { useState, useEffect } from "react";
+import Loader from "./Loader";
+import { timeCalc } from "./utils/timeAgo";
 
 function App() {
   return (
-    <>
-      <header className="w-screen h-[50px] flex items-center justify-between px-4 py-2">
-        <NavToHome/>
-        <Link to="/post" className="rounded-md p-2 bg-blue-500 text-white">
-          Post
-        </Link>
+    <div className="min-h-screen flex flex-col">
+      <header className="nav-bar">
+        <div className="container w-full flex items-center justify-between">
+          <NavToHome />
+          <Link to="/post" className="btn btn-primary">
+            Post
+          </Link>
+        </div>
       </header>
-      <main className="w-screen h-[calc(100vh-50px)] grid grid-cols-[2fr_8fr] place-items-center">
+      <main className="container grid grid-cols-[280px_1fr] gap-6 py-4 flex-1">
         <MyInfo />
         <PostList />
       </main>
-    </>
+      <Footer />
+    </div>
   );
 }
 
 export function NavToHome() {
   return (
     <Link to="/" className="flex flex-col items-start">
-      <h1 className="text-2xl font-bold">Problem Board</h1>
-      <p>Share your problems with others</p>
+      <span className="brand">Problem Board</span>
+      <span className="brand-sub">Real problems. Real solutions.</span>
     </Link>
   );
 }
 
 function MyInfo() {
-  const {user, logout} = useAuth();
+  const { user, logout } = useAuth();
+  const [myProblems, setMyProblems] = useState([]);
+  useEffect(() => {
+    if(user){
+      getDocsByUserId(user.uid).then((problems) => {
+        setMyProblems(problems);
+      });
+    }
+  }, [user]);
+  const navigate = useNavigate();
   return (
-    <div className="w-full h-full p-4 flex flex-col items-center justify-start">
-      <h1 className="text-2xl">My Info</h1>
-      <div className="w-full flex items-center justify-around">
-        {user&&<Link className="rounded-md p-1 bg-blue-500 text-white" to="/login" onClick={logout}>{"Logout"}</Link>}
-        {!user&&<Link className="rounded-md p-1 bg-blue-500 text-white" to="/login">{"Login"}</Link>}
-        {!user&&<Link className="rounded-md p-1 bg-blue-500 text-white" to="/signup">{"Sign Up"}</Link>}
+    <div className="card p-4 flex flex-col gap-3">
+      <h2 className="text-lg font-semibold">My Info</h2>
+      <div className="flex items-center gap-2">
+        {user && (
+          <Link className="btn" to="/login" onClick={logout}>
+            {"Logout"}
+          </Link>
+        )}
+        {!user && (
+          <Link className="btn btn-primary" to="/login">
+            {"Login"}
+          </Link>
+        )}
+        {!user && (
+          <Link className="btn" to="/signup">
+            {"Sign Up"}
+          </Link>
+        )}
       </div>
-      {user&&<p>Email:{user.email}</p>}
+      {user && <p className="muted text-sm">Email: {user.email} | Username: {user.displayName}</p>}
+      <h3 className="text-lg font-medium">Problems ({myProblems.length})</h3>
+      {user &&
+        myProblems.map((problem, index) => (
+          <div key={index} className="flex flex-col">
+            <Link to={`/problem/${problem.id}`}>
+              <h3 className="text-base">{problem.title}</h3>
+            </Link>
+            <p className="muted text-sm">
+              Views {problem.views} | Empathy {problem.empathy}{" "} | Watching {problem.watching}{" "}<span className="cursor-pointer" onClick={()=>navigate(`/edit/${problem.id}`)}>✎</span>
+            </p>
+          </div>
+        ))}
     </div>
   );
 }
 
 function PostList() {
   const [problems, setProblems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(10);
   useEffect(() => {
-    getAllDocs().then((problems) => setProblems(problems));
+    getAllDocs().then((problems) => {
+      setProblems(problems);
+      setLoading(false);
+    });
   }, []);
+  // Reset pagination when the problems list changes (e.g., filter/sort)
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [problems]);
   return (
-    <div className="w-full h-full flex flex-col justify-start items-center relative">
-      <div className="flex gap-2 p-4 absolute top-0 right-0">
-        <span className="category">All</span>
-        <span className="category">General</span>
-        <span className="category">Work</span>
-        <span className="category">Health</span>
-        <span className="category">Study</span>
-        <span className="category">Finance</span>
-        <select className="cursor-pointer">
-          <option>Latest</option>
-          <option>Likes</option>
-          <option>Views</option>
-        </select>
-      </div>
-      {problems.map((problem, index) => (
-        <ProblemCard key={index} index={index} problem={problem} />
-      ))}
+    <div className="w-full flex flex-col gap-3">
+      <FilterNav setProblems={setProblems} />
+      {loading ? (
+        <div className="w-full h-full flex items-center justify-center">
+          <Loader />
+        </div>
+      ) : (
+        <div className="card w-full">
+          {problems.length === 0 ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <p className="muted text-sm">No problems found</p>
+            </div>
+          ) : (
+            problems.slice(0, visibleCount).map((problem, index) => (
+              <ProblemCard key={index} index={index} problem={problem} />
+            ))
+          )}
+        </div>
+      )}
+      {!loading && visibleCount < problems.length && (
+        <div className="w-full flex items-center justify-center">
+          <button
+            className="btn"
+            onClick={() => setVisibleCount((c) => Math.min(c + 10, problems.length))}
+          >
+            Load more
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
-function ProblemCard({index, problem}){
-    return(
-        <div className={`w-full h-[50px] flex items-center justify-start border border-gray-200 p-4 ${index === 0 ? "mt-12" : ""}`}>
-            <h1 className="text-2xl">{index+1}</h1>
-            <h1 className="text-2xl">{problem.title}</h1>
-            <p>{problem.category}</p>
-            <p>{problem.createdAt.toDate().toLocaleString()}</p>
-            <p>{problem.views}</p>
-            <p>{problem.empathy}</p>
+function FilterNav({ setProblems }) {
+  const [category, setCategory] = useState("all");
+  const [sort, setSort] = useState("latest");
+  const [status, setStatus] = useState("all");
+
+  useEffect(() => {
+    const fetch = category === "all" ? getAllDocs : () => getDocsByCategory(category);
+    fetch().then((problems) => {
+      const filtered = status === "all" ? problems : problems.filter((p) => (p.status || "Open") === status);
+      setProblems(filtered);
+    });
+  }, [category, status]);
+
+  useEffect(() => {
+    if (sort === "empathy") {
+      setProblems((prev) => [...prev].sort((a, b) => b.empathy - a.empathy));
+    } else if (sort === "views") {
+      setProblems((prev) => [...prev].sort((a, b) => b.views - a.views));
+    } else {
+      setProblems((prev) =>
+        [...prev].sort(
+          (a, b) =>
+            timeCalc(a.createdAt).seconds - timeCalc(b.createdAt).seconds
+        )
+      );
+    }
+  }, [sort]);
+
+  return (
+    <div className="w-full flex items-center justify-end">
+      <div className="list-header">
+        <span className="category" onClick={() => setCategory("all")}>
+          All
+        </span>
+        <span className="category" onClick={() => setCategory("general")}>
+          General
+        </span>
+        <span className="category" onClick={() => setCategory("work")}>
+          Work
+        </span>
+        <span className="category" onClick={() => setCategory("health")}>
+          Health
+        </span>
+        <span className="category" onClick={() => setCategory("study")}>
+          Study
+        </span>
+        <span className="category" onClick={() => setCategory("finance")}>
+          Finance
+        </span>
+        <span className="category" onClick={() => setStatus("all")}>
+          Status: All
+        </span>
+        <span className="category" onClick={() => setStatus("Open")}>
+          Open
+        </span>
+        <span className="category" onClick={() => setStatus("Trending")}>
+          Trending
+        </span>
+        <span className="category" onClick={() => setStatus("Resolved")}>
+          Resolved
+        </span>
+        <select
+          className="base-input-design"
+          onChange={(e) => setSort(e.target.value)}
+        >
+          <option value="latest">Latest</option>
+          <option value="empathy">Empathy</option>
+          <option value="views">Viewed</option>
+        </select>
+      </div>
+    </div>
+  );
+}
+
+function ProblemCard({ index, problem }) {
+  return (
+    <Link to={`/problem/${problem?.id}`} className="card-row">
+      <div className="muted text-sm">{index + 1}</div>
+      <div className="flex flex-col gap-1 min-w-0">
+        <h3 className="text-base font-medium leading-snug break-words min-w-0">
+          {problem?.title}
+        </h3>
+        {problem?.status && (
+          <div className="flex items-center gap-2">
+            <span className="tag">{problem.status}</span>
+          </div>
+        )}
+      </div>
+      <div className="flex flex-col items-start md:items-end gap-2 text-sm">
+        <div className="flex items-center gap-2">
+          <span className="tag">{problem?.category}</span>
         </div>
-    );
+        <div className="flex flex-wrap items-center gap-3 muted border-l pl-3">
+          <span title="Views">Viewed {problem?.views}</span>
+          <span title="Empathy">Empathy {problem?.empathy}</span>
+          <span title="Watching">Watching {problem?.watching}</span>
+          <span title="Created at">{timeCalc(problem?.createdAt).text}</span>
+        </div>
+      </div>
+    </Link>
+  );
 }
 
 export default App;
+
+export function Footer() {
+  return (
+    <footer className="border-t surface mt-8">
+      <div className="container py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
+        <div className="muted">© {new Date().getFullYear()} Problem Board</div>
+        <nav className="flex flex-wrap items-center gap-3">
+          <Link className="muted" to="/post">Post a Problem</Link>
+          <Link className="muted" to="/">Browse Problems</Link>
+          <Link className="muted" to="/login">Login / Sign Up</Link>
+        </nav>
+        <div>
+          <a className="muted" href="mailto:problemboardfeedback@gmail.com">problemboardfeedback@gmail.com</a>
+        </div>
+      </div>
+    </footer>
+  );
+}

@@ -8,6 +8,7 @@ import Login from './Login.jsx'
 import AuthProvider from './context/AuthContext'
 import Protector from './Protector'
 import ProblemDetail from './ProblemDetail.jsx'
+import EditProblem from './EditProblem.jsx'
 
 createRoot(document.getElementById('root')).render(
   <AuthProvider>
@@ -18,6 +19,7 @@ createRoot(document.getElementById('root')).render(
         <Route path='/signup' element={<SignUp />} />
         <Route path='/login' element={<Login />} />
         <Route path='/problem/:id' element={<ProblemDetail />} />
+        <Route path='/edit/:id' element={<EditProblem />} />
       </Routes>
     </BrowserRouter>
   </AuthProvider>,

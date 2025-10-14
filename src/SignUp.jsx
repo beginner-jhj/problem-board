@@ -7,14 +7,15 @@ import ErrorAlert from "./ErrorAlert";
 export default function SignUp() {
   const { signup } = useAuth();
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (email.length > 0 && password.length >= 6) {
-        await signup(email, password);
+      if (email.length > 0 && password.length >= 6 && name.length > 0 ) {
+        await signup(email, password, name);
         navigate("/");
       }
     } catch (error) {
@@ -52,6 +53,12 @@ export default function SignUp() {
             placeholder="email"
             className="p-2 border border-gray-300 rounded-md"
             onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            type="text"
+            placeholder="name"
+            className="p-2 border border-gray-300 rounded-md"
+            onChange={(e) => setName(e.target.value)}
           />
           <input
             type="password"
