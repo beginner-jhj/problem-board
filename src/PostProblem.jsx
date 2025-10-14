@@ -4,6 +4,8 @@ import { addProblem } from "./firebase/problemHandler";
 import { useNavigate } from "react-router";
 import { useAuth } from "./context/AuthContext";
 import FeatureInput from "./components/FeatureInput";
+import ErrorAlert from "./ErrorAlert";
+import { getErrorMessage } from "./utils/errorMessages";
 
 function PostProblem() {
   const [title, setTitle] = useState("");
@@ -13,6 +15,7 @@ function PostProblem() {
   const [features, setFeatures] = useState([""]);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [error, setError] = useState("");
 
   const addFeature = () => {
     
@@ -25,7 +28,7 @@ function PostProblem() {
     e.preventDefault();
     try {
       if (!title || !description || !category || !frequency) {
-        alert("Please fill in all fields");
+        setError("Please fill in all required fields");
         return;
       }
       const docRef = await addProblem(
@@ -41,11 +44,13 @@ function PostProblem() {
       navigate(`/problem/${docRef.id}`);
     } catch (error) {
       console.error("Error adding problem:", error);
+      setError(getErrorMessage(error));
     }
   };
 
   return (
     <>
+      <ErrorAlert isOpen={error.length > 0} message={error} />
       <header className="w-screen h-[50px] flex items-center justify-between px-4 py-2">
         <NavToHome message="Share your problems with others" />
       </header>

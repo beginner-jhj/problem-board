@@ -4,6 +4,8 @@ import { Link, useNavigate, useParams } from "react-router";
 import FeatureInput from "./components/FeatureInput";
 import { NavToHome } from "./App";
 import Loader from "./Loader";
+import ErrorAlert from "./ErrorAlert";
+import { getErrorMessage } from "./utils/errorMessages";
 
 export default function EditProblem() {
   const { id } = useParams();
@@ -30,7 +32,7 @@ export default function EditProblem() {
         setFrequency(p.frequency || "");
         setFeatures(Array.isArray(p.features) && p.features.length ? p.features : [""]);
       })
-      .catch(() => setError("Failed to load problem"))
+      .catch((err) => setError(getErrorMessage(err)))
       .finally(() => setLoading(false));
     return () => {
       mounted = false;
@@ -49,12 +51,13 @@ export default function EditProblem() {
       await updateProblem(id, { title, description, category, frequency, features });
       navigate(`/problem/${id}`);
     } catch (err) {
-      setError("Failed to update problem");
+      setError(getErrorMessage(err));
     }
   };
 
   return (
     <>
+      <ErrorAlert isOpen={error.length > 0} message={error} />
       <header className="nav-bar">
         <div className="container w-full flex items-center justify-between">
           <NavToHome />
@@ -62,11 +65,6 @@ export default function EditProblem() {
         </div>
       </header>
       <main className="container py-6">
-        {error && (
-          <div className="card p-3 mb-4">
-            <p className="text-sm" style={{ color: "#b91c1c" }}>{error}</p>
-          </div>
-        )}
         {loading ? (
           <div className="w-full flex items-center justify-center"><Loader /></div>
         ) : (

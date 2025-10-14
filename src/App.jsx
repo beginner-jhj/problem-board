@@ -7,7 +7,9 @@ import {
 } from "./firebase/problemHandler";
 import { useState, useEffect } from "react";
 import Loader from "./Loader";
+import ErrorAlert from "./ErrorAlert";
 import { timeCalc } from "./utils/timeAgo";
+import { getErrorMessage } from "./utils/errorMessages";
 
 function App() {
   return (
@@ -90,11 +92,14 @@ function PostList() {
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(10);
+  const [error, setError] = useState("");
   useEffect(() => {
-    getAllDocs().then((problems) => {
-      setProblems(problems);
-      setLoading(false);
-    });
+    getAllDocs()
+      .then((problems) => {
+        setProblems(problems);
+      })
+      .catch((err) => setError(getErrorMessage(err)))
+      .finally(() => setLoading(false));
   }, []);
   // Reset pagination when the problems list changes (e.g., filter/sort)
   useEffect(() => {
@@ -102,7 +107,8 @@ function PostList() {
   }, [problems]);
   return (
     <div className="w-full flex flex-col gap-3">
-      <FilterNav setProblems={setProblems} />
+      <ErrorAlert isOpen={error.length > 0} message={error} />
+      <FilterNav setProblems={setProblems} setError={setError} />
       {loading ? (
         <div className="w-full h-full flex items-center justify-center">
           <Loader />
@@ -134,17 +140,19 @@ function PostList() {
   );
 }
 
-function FilterNav({ setProblems }) {
+function FilterNav({ setProblems, setError }) {
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState("latest");
   const [status, setStatus] = useState("all");
 
   useEffect(() => {
     const fetch = category === "all" ? getAllDocs : () => getDocsByCategory(category);
-    fetch().then((problems) => {
-      const filtered = status === "all" ? problems : problems.filter((p) => (p.status || "Open") === status);
-      setProblems(filtered);
-    });
+    fetch()
+      .then((problems) => {
+        const filtered = status === "all" ? problems : problems.filter((p) => (p.status || "Open") === status);
+        setProblems(filtered);
+      })
+      .catch((err) => setError && setError(getErrorMessage(err)));
   }, [category, status]);
 
   useEffect(() => {

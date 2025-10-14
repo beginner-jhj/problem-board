@@ -3,6 +3,7 @@ import { useState } from "react";
 import { NavToHome } from "./App";
 import { Link, useNavigate } from "react-router";
 import ErrorAlert from "./ErrorAlert";
+import { getErrorMessage } from "./utils/errorMessages";
 
 export default function Login() {
   const { signin } = useAuth();
@@ -19,20 +20,7 @@ export default function Login() {
       }
     } catch (error) {
       console.log(error);
-      switch (error.code) {
-        case "auth/invalid-email":
-          setError("Invalid email");
-          break;
-        case "auth/weak-password":
-          setError("Weak password");
-          break;
-        case "auth/email-already-in-use":
-          setError("Email already in use");
-          break;
-        default:
-          setError("Something went wrong");
-          break;
-      }
+      setError(getErrorMessage(error));
     }
   };
   return (

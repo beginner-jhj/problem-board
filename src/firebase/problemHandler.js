@@ -11,9 +11,14 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "./app";
+import { assert, appError } from "../utils/appError";
 
 export const addProblem = async (problem, userId) => {
   try {
+    assert(userId && typeof userId === 'string', 'auth/unauthenticated', 'User must be authenticated');
+    assert(problem && typeof problem === 'object', 'problem/invalid-args', 'Problem payload is required');
+    const { title, description, category, frequency } = problem || {};
+    assert(title && description && category && frequency, 'problem/missing-fields', 'Missing required problem fields');
     const docRef = await addDoc(collection(db, "problems"), {
       ...problem,
       createdAt: serverTimestamp(),
@@ -35,9 +40,11 @@ export const addProblem = async (problem, userId) => {
 
 export const toggleWatching = async (problemId, userId) => {
   try {
+    assert(problemId, 'problem/invalid-id', 'Problem ID is required');
+    assert(userId, 'auth/unauthenticated', 'User must be authenticated');
     const docRef = doc(db, "problems", problemId);
     const snap = await getDoc(docRef);
-    if (!snap.exists()) return null;
+    if (!snap.exists()) throw appError('db/not-found', 'Problem not found');
     const data = snap.data();
     const already = Array.isArray(data.watchingBy) && data.watchingBy.includes(userId);
     if (already) {
@@ -61,6 +68,8 @@ export const toggleWatching = async (problemId, userId) => {
 
 export const toggleEmpathy = async (problemId, userId) => {
   try {
+    assert(problemId, 'problem/invalid-id', 'Problem ID is required');
+    assert(userId, 'auth/unauthenticated', 'User must be authenticated');
     const docRef = doc(db, "problems", problemId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
@@ -86,8 +95,7 @@ export const toggleEmpathy = async (problemId, userId) => {
         return { empathy: nextCount, empathizedBy: nextArr, empathized: true };
       }
     } else {
-      console.log("No such document!");
-      return null;
+      throw appError('db/not-found', 'Problem not found');
     }
   } catch (error) {
     console.error("Error reading document:", error);
@@ -97,21 +105,24 @@ export const toggleEmpathy = async (problemId, userId) => {
 
 export const increaseView = async (problemId, userId) => {
   try {
+    assert(problemId, 'problem/invalid-id', 'Problem ID is required');
+    assert(userId, 'auth/unauthenticated', 'User must be authenticated');
     const docRef = doc(db, "problems", problemId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       const problem = docSnap.data();
-      if (problem.viewsBy.includes(userId)) {
+      const viewsBy = Array.isArray(problem.viewsBy) ? problem.viewsBy : [];
+      const views = typeof problem.views === 'number' ? problem.views : 0;
+      if (viewsBy.includes(userId)) {
         return null;
       }
-      const newViews = problem.views + 1;
+      const newViews = views + 1;
       await updateDoc(docRef, {
         views: newViews,
-        viewsBy: [...problem.viewsBy, userId],
+        viewsBy: [...viewsBy, userId],
       });
     } else {
-      console.log("No such document!");
-      return null;
+      throw appError('db/not-found', 'Problem not found');
     }
   } catch (error) {
     console.error("Error reading document:", error);
@@ -121,11 +132,17 @@ export const increaseView = async (problemId, userId) => {
 
 export const updateProblem = async (problemId, problem) => {
   try {
+    assert(problemId, 'problem/invalid-id', 'Problem ID is required');
     const docRef = doc(db, "problems", problemId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       const { title, description, category, frequency, features } =
         problem || {};
+      assert(
+        title !== undefined || description !== undefined || category !== undefined || frequency !== undefined || features !== undefined,
+        'problem/no-updates',
+        'Nothing to update'
+      );
       await updateDoc(docRef, {
         ...(title !== undefined ? { title } : {}),
         ...(description !== undefined ? { description } : {}),
@@ -135,8 +152,7 @@ export const updateProblem = async (problemId, problem) => {
         updatedAt: serverTimestamp(),
       });
     } else {
-      console.log("No such document!");
-      return null;
+      throw appError('db/not-found', 'Problem not found');
     }
   } catch (error) {
     console.error("Error reading document:", error);
@@ -146,13 +162,13 @@ export const updateProblem = async (problemId, problem) => {
 
 export const deleteProblem = async (problemId) => {
   try {
+    assert(problemId, 'problem/invalid-id', 'Problem ID is required');
     const docRef = doc(db, "problems", problemId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       await deleteDoc(docRef);
     } else {
-      console.log("No such document!");
-      return null;
+      throw appError('db/not-found', 'Problem not found');
     }
   } catch (error) {
     console.error("Error reading document:", error);
@@ -162,13 +178,13 @@ export const deleteProblem = async (problemId) => {
 
 export const getDocById = async (id) => {
   try {
+    assert(id, 'problem/invalid-id', 'Problem ID is required');
     const docRef = doc(db, "problems", id);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       return docSnap.data();
     } else {
-      console.log("No such document!");
-      return null;
+      throw appError('db/not-found', 'Problem not found');
     }
   } catch (error) {
     console.error("Error reading document:", error);
@@ -194,6 +210,7 @@ export const getAllDocs = async () => {
 
 export const getDocsByCategory = async (category) => {
   try {
+    assert(category && typeof category === 'string', 'problem/invalid-category', 'Category is required');
     const q = query(
       collection(db, "problems"),
       where("category", "==", category)
@@ -212,6 +229,7 @@ export const getDocsByCategory = async (category) => {
 
 export const getDocsByUserId = async (userId) => {
   try {
+    assert(userId && typeof userId === 'string', 'auth/invalid-user', 'User ID is required');
     const q = query(collection(db, "problems"), where("userId", "==", userId));
     const querySnapshot = await getDocs(q);
     const problems = querySnapshot.docs.map((doc) => ({

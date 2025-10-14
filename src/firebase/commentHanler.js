@@ -11,10 +11,17 @@ import {
     where,
 } from "firebase/firestore";
 import { db } from "./app";
+import { assert, appError } from "../utils/appError";
 
 
 export const addComment = async (comment) => {
     try {
+        assert(comment && typeof comment === 'object', 'comment/invalid-args', 'Comment payload is required');
+        const { content, userId, userName, problemId } = comment || {};
+        assert(typeof content === 'string' && content.trim().length > 0, 'comment/empty', 'Comment content is required');
+        assert(userId && typeof userId === 'string', 'auth/unauthenticated', 'User must be authenticated');
+        assert(userName && typeof userName === 'string', 'auth/invalid-user', 'User name is required');
+        assert(problemId && typeof problemId === 'string', 'comment/invalid-problem', 'Problem ID is required');
         const docRef = await addDoc(collection(db, "comments"), {
             ...comment,
             createdAt: serverTimestamp(),
@@ -33,6 +40,7 @@ export const addComment = async (comment) => {
 
 export const toggleAccept = async (commentId) => {
     try {
+        assert(commentId, 'comment/invalid-id', 'Comment ID is required');
         const docRef = doc(db, "comments", commentId);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
@@ -54,8 +62,7 @@ export const toggleAccept = async (commentId) => {
             }
             return { accepted: nextAccepted };
         } else {
-            console.log("No such document!");
-            return null;
+            throw appError('db/not-found', 'Comment not found');
         }
     } catch (error) {
         console.error("Error updating document:", error);
@@ -66,6 +73,8 @@ export const toggleAccept = async (commentId) => {
 
 export const updateComment = async (commentId, content) => {
     try {
+        assert(commentId, 'comment/invalid-id', 'Comment ID is required');
+        assert(typeof content === 'string' && content.trim().length > 0, 'comment/empty', 'Comment content is required');
         const docRef = doc(db, "comments", commentId);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
@@ -75,8 +84,7 @@ export const updateComment = async (commentId, content) => {
             });
             return { id: commentId, content };
         } else {
-            console.log("No such document!");
-            return null;
+            throw appError('db/not-found', 'Comment not found');
         }
     } catch (error) {
         console.error("Error updating document:", error);
@@ -86,14 +94,14 @@ export const updateComment = async (commentId, content) => {
 
 export const deleteComment = async (commentId) => {
     try {
+        assert(commentId, 'comment/invalid-id', 'Comment ID is required');
         const docRef = doc(db, "comments", commentId);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
             await deleteDoc(docRef);
             return true;
         } else {
-            console.log("No such document!");
-            return null;
+            throw appError('db/not-found', 'Comment not found');
         }
     } catch (error) {
         console.error("Error deleting document:", error);
@@ -104,6 +112,7 @@ export const deleteComment = async (commentId) => {
 
 export const getAllComments = async (problemId) => {
     try {
+        assert(problemId && typeof problemId === 'string', 'comment/invalid-problem', 'Problem ID is required');
         const q = query(collection(db, "comments"), where("problemId", "==", problemId));
         const querySnapshot = await getDocs(q);
         const comments = querySnapshot.docs.map((docSnap) => ({
@@ -119,6 +128,8 @@ export const getAllComments = async (problemId) => {
 
 export const toggleLike = async (commentId, userId) => {
     try {
+        assert(commentId, 'comment/invalid-id', 'Comment ID is required');
+        assert(userId, 'auth/unauthenticated', 'User must be authenticated');
         const docRef = doc(db, "comments", commentId);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
@@ -142,8 +153,7 @@ export const toggleLike = async (commentId, userId) => {
                 return { likes: nextCount, likedBy: nextArr, liked: true };
             }
         } else {
-            console.log("No such document!");
-            return null;
+            throw appError('db/not-found', 'Comment not found');
         }
     } catch (error) {
         console.error("Error reading document:", error);
@@ -153,6 +163,8 @@ export const toggleLike = async (commentId, userId) => {
 
 export const toggleDislike = async (commentId, userId) => {
     try {
+        assert(commentId, 'comment/invalid-id', 'Comment ID is required');
+        assert(userId, 'auth/unauthenticated', 'User must be authenticated');
         const docRef = doc(db, "comments", commentId);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
@@ -176,8 +188,7 @@ export const toggleDislike = async (commentId, userId) => {
                 return { dislikes: nextCount, dislikedBy: nextArr, disliked: true };
             }
         } else {
-            console.log("No such document!");
-            return null;
+            throw appError('db/not-found', 'Comment not found');
         }
     } catch (error) {
         console.error("Error reading document:", error);
