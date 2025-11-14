@@ -13,12 +13,13 @@ import {
 import { db } from "./app";
 import { assert, appError } from "../utils/appError";
 
-export const addProblem = async (problem, userId) => {
+export const addProblem = async (problem, userId, userName) => {
   try {
     assert(userId && typeof userId === 'string', 'auth/unauthenticated', 'User must be authenticated');
     assert(problem && typeof problem === 'object', 'problem/invalid-args', 'Problem payload is required');
     const { title, description, category, frequency } = problem || {};
     assert(title && description && category && frequency, 'problem/missing-fields', 'Missing required problem fields');
+    assert(userName && typeof userName === 'string', 'user/missing-name', 'User name is required');
     const docRef = await addDoc(collection(db, "problems"), {
       ...problem,
       createdAt: serverTimestamp(),
@@ -26,6 +27,7 @@ export const addProblem = async (problem, userId) => {
       views: 0,
       watching: 0,
       userId: userId,
+      userName: userName,
       empathizedBy: [],
       viewsBy: [],
       watchingBy: [],

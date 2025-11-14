@@ -8,6 +8,7 @@ import {
 } from 'firebase/auth'
 
 import app from './app'
+import { createUserProfile } from './userHandler'
 
 const auth = getAuth(app)
 
@@ -16,6 +17,13 @@ export const signup = async (email, password, name)=>{
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const username = createRandomUsername(name);
         await updateProfile(userCredential.user, {displayName: username});
+        
+        // Create user profile in Firestore
+        await createUserProfile(userCredential.user.uid, {
+            displayName: username,
+            email: email
+        });
+        
         return userCredential.user;
     } catch (error) {
         throw error;

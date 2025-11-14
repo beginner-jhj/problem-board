@@ -81,7 +81,7 @@ export default function ProblemDetail() {
               </div>
               <div className="text-sm muted flex flex-col items-end gap-1">
                 <span>
-                  Posted by {user?.displayName} | Created{" "}
+                  Posted by {problem?.userName || "Unknown"} | Created{" "}
                   {problem?.createdAt?.toDate().toLocaleString()}
                 </span>
                 <div className="flex items-center gap-4">

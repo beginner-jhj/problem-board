@@ -1,5 +1,6 @@
 import { createContext,useContext, useEffect, useState } from "react";
 import { onAuthStateChange,signup,signin,logout } from "../firebase/auth";
+import { getUserProfile, createUserProfile } from "../firebase/userHandler";
 
 const AuthContext = createContext();
 
@@ -8,7 +9,26 @@ export default function AuthProvider({children}){
     const [loading,setLoading] = useState(true);
 
     useEffect(()=>{
-        const unsubscribe = onAuthStateChange((user)=>{
+        const unsubscribe = onAuthStateChange(async (user)=>{
+            if (user) {
+                // Check if user profile exists in Firestore, create if not
+                try {
+                    await getUserProfile(user.uid);
+                } catch (error) {
+                    // Profile doesn't exist, create it
+                    if (error.code === "db/not-found" || error.message.includes("not found")) {
+                        try {
+                            await createUserProfile(user.uid, {
+                                displayName: user.displayName || "Unknown User",
+                                email: user.email || "",
+                            });
+                            console.log("Auto-created user profile for:", user.uid);
+                        } catch (createError) {
+                            console.error("Failed to auto-create user profile:", createError);
+                        }
+                    }
+                }
+            }
             setUser(user);
             setLoading(false);
         });

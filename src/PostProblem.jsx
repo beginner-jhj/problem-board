@@ -39,7 +39,8 @@ function PostProblem() {
           frequency,
           features,
         },
-        user.uid
+        user.uid,
+        user.displayName
       );
       navigate(`/problem/${docRef.id}`);
     } catch (error) {
