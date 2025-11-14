@@ -9,7 +9,6 @@ import AuthProvider from './context/AuthContext'
 import Protector from './Protector'
 import ProblemDetail from './ProblemDetail.jsx'
 import EditProblem from './EditProblem.jsx'
-import MigrationPage from './MigrationPage.jsx'
 
 createRoot(document.getElementById('root')).render(
   <AuthProvider>
@@ -21,7 +20,6 @@ createRoot(document.getElementById('root')).render(
         <Route path='/login' element={<Login />} />
         <Route path='/problem/:id' element={<ProblemDetail />} />
         <Route path='/edit/:id' element={<EditProblem />} />
-        <Route path='/migrate' element={<MigrationPage />} />
       </Routes>
     </BrowserRouter>
   </AuthProvider>,
