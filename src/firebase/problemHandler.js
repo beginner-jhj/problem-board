@@ -162,18 +162,20 @@ export const updateProblem = async (problemId, problem) => {
   }
 };
 
-export const deleteProblem = async (problemId) => {
+export const deleteProblem = async (problemId, userId) => {
   try {
     assert(problemId, 'problem/invalid-id', 'Problem ID is required');
+    assert(userId && typeof userId === 'string', 'auth/unauthenticated', 'User must be authenticated to delete a problem');
     const docRef = doc(db, "problems", problemId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       await deleteDoc(docRef);
+      return true;
     } else {
       throw appError('db/not-found', 'Problem not found');
     }
   } catch (error) {
-    console.error("Error reading document:", error);
+    console.error("Error deleting document:", error);
     throw error;
   }
 };

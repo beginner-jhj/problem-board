@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getDocById, updateProblem, deleteProblem } from "./firebase/problemHandler";
+import { useAuth } from "./context/AuthContext";
 import { Link, useNavigate, useParams } from "react-router";
 import FeatureInput from "./components/FeatureInput";
 import { NavToHome } from "./App";
@@ -177,12 +178,32 @@ export default function EditProblem() {
 
 function DeleteConfirmModal({id, open=false, setOpen}){
     const navigate = useNavigate();
+  const { user } = useAuth();
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!user) {
+      alert('You must be logged in to delete this problem');
+      return;
+    }
+    try {
+      setDeleting(true);
+      await deleteProblem(id, user.uid);
+      navigate("/");
+    } catch (err) {
+      console.error('Delete failed:', err);
+      // Show a friendly message
+      alert(err && (err.message || err.code) ? (err.message || err.code) : 'Failed to delete problem');
+    } finally {
+      setDeleting(false);
+    }
+  };
     return (
         <div className={`fixed top-0 left-0 right-0 bottom-0 z-50 w-full h-full flex items-center justify-center bg-black/50 ${open ? "flex" : "hidden"}`}>
             <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col gap-2">
                 <p className="text-center">Are you sure you want to delete this problem? <br/>This action cannot be undone.</p>
                 <div className="flex items-center gap-2">
-                    <button onClick={()=>deleteProblem(id).then(()=>navigate("/"))} className="btn btn-warn">Yes</button>
+          <button onClick={handleDelete} disabled={deleting} className="btn btn-warn">{deleting ? 'Deleting...' : 'Yes'}</button>
                     <button onClick={()=>setOpen(false)} className="btn btn-primary">No</button>
                 </div>
             </div>
