@@ -1,5 +1,5 @@
 import {
-  collection,
+  deleteDoc,
   doc,
   getDoc,
   setDoc,
@@ -16,10 +16,10 @@ import { assert, appError } from "../utils/appError";
  */
 export const createUserProfile = async (userId, userData) => {
   try {
-    assert(userId && typeof userId === 'string', 'auth/invalid-user', 'User ID is required');
-    assert(userData && typeof userData === 'object', 'user/invalid-data', 'User data is required');
-    assert(userData.displayName, 'user/missing-displayname', 'Display name is required');
-    assert(userData.email, 'user/missing-email', 'Email is required');
+    assert(userId && typeof userId === 'string', 'auth/invalid-user');
+    assert(userData && typeof userData === 'object', 'user/invalid-data');
+    assert(userData.displayName, 'user/missing-displayname');
+    assert(userData.email, 'user/missing-email');
 
     const userRef = doc(db, "users", userId);
     await setDoc(userRef, {
@@ -31,7 +31,6 @@ export const createUserProfile = async (userId, userData) => {
     
     return { success: true };
   } catch (error) {
-    console.error("Error creating user profile:", error);
     throw error;
   }
 };
@@ -42,7 +41,7 @@ export const createUserProfile = async (userId, userData) => {
  */
 export const getUserProfile = async (userId) => {
   try {
-    assert(userId && typeof userId === 'string', 'auth/invalid-user', 'User ID is required');
+    assert(userId && typeof userId === 'string', 'auth/invalid-user');
     
     const userRef = doc(db, "users", userId);
     const userSnap = await getDoc(userRef);
@@ -53,10 +52,9 @@ export const getUserProfile = async (userId) => {
         ...userSnap.data(),
       };
     } else {
-      throw appError('db/not-found', 'User profile not found');
+      throw appError('user/profile-not-found');
     }
   } catch (error) {
-    console.error("Error getting user profile:", error);
     throw error;
   }
 };
@@ -68,14 +66,14 @@ export const getUserProfile = async (userId) => {
  */
 export const updateUserProfile = async (userId, updates) => {
   try {
-    assert(userId && typeof userId === 'string', 'auth/invalid-user', 'User ID is required');
-    assert(updates && typeof updates === 'object', 'user/invalid-data', 'Update data is required');
+    assert(userId && typeof userId === 'string', 'auth/invalid-user');
+    assert(updates && typeof updates === 'object', 'user/invalid-data');
     
     const userRef = doc(db, "users", userId);
     const userSnap = await getDoc(userRef);
     
     if (!userSnap.exists()) {
-      throw appError('db/not-found', 'User profile not found');
+      throw appError('user/profile-not-found');
     }
     
     await updateDoc(userRef, {
@@ -85,7 +83,24 @@ export const updateUserProfile = async (userId, updates) => {
     
     return { success: true };
   } catch (error) {
-    console.error("Error updating user profile:", error);
     throw error;
   }
 };
+
+export const deleteUserProfile = async (userId) => {
+  try {
+    assert(userId && typeof userId === 'string', 'auth/invalid-user');
+    
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+    
+    if (userSnap.exists()) {
+      await deleteDoc(userRef);
+      return { success: true };
+    } else {
+      throw appError('user/profile-not-found');
+    }
+  } catch (error) {
+    throw error;
+  }
+}

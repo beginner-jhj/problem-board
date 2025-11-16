@@ -3,7 +3,7 @@ import { getDocById } from "./firebase/problemHandler";
 import { addComment, getAllComments, toggleLike, toggleDislike, updateComment, deleteComment, toggleAccept } from "./firebase/commentHanler";
 import { useEffect, useState } from "react";
 import ErrorAlert from "./ErrorAlert";
-import { NavToHome } from "./App";
+import { NavToHome, Footer } from "./App";
 import Loader from "./Loader";
 import { useAuth } from "./context/AuthContext";
 import {
@@ -13,6 +13,7 @@ import {
 } from "./firebase/problemHandler";
 import { useNavigate } from "react-router";
 import { timeCalc } from "./utils/timeAgo";
+import { getErrorMessage } from "./utils/errorMessages";
 
 export default function ProblemDetail() {
   const { id } = useParams();
@@ -39,11 +40,11 @@ export default function ProblemDetail() {
         if (!problem?.viewsBy.includes(user?.uid) && user) {
           setViewed(true);
           setProblem((prev) => ({ ...prev, views: prev?.views + 1 }));
-          increaseView(id, user.uid).catch((error) => setError(error.message));
+          increaseView(id, user.uid).catch((error) => setError(getErrorMessage(error)));
         }
         setLoading(false);
       } catch (error) {
-        setError("Error reading document");
+        setError(getErrorMessage(error));
         setLoading(false);
       }
     };
@@ -66,10 +67,10 @@ export default function ProblemDetail() {
         )}
         {!loading && (
           <div className="card p-5 flex flex-col gap-4">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start justify-between gap-4 flex-col md:flex-row">
               <div className="flex flex-col gap-1">
                 <h1 className="text-xl font-semibold">{problem?.title}</h1>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="tag">{problem?.category}</span>
                   {problem?.frequency && (
                     <span className="tag">{problem?.frequency}</span>
@@ -79,12 +80,12 @@ export default function ProblemDetail() {
                   )}
                 </div>
               </div>
-              <div className="text-sm muted flex flex-col items-end gap-1">
-                <span>
+              <div className="text-sm muted flex flex-col items-start md:items-end gap-1">
+                <span className="line-clamp-2">
                   Posted by {problem?.userName || "Unknown"} | Created{" "}
                   {problem?.createdAt?.toDate().toLocaleString()}
                 </span>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-wrap md:flex-nowrap">
                   <span title="Views">View {problem?.views}</span>
                   <span title="Empathy">Empathy {problem?.empathy}</span>
                 </div>
@@ -110,15 +111,15 @@ export default function ProblemDetail() {
                 </section>
               )}
 
-            <div className="flex items-center justify-between pt-2">
-              <div className="text-sm muted flex items-center gap-4">
+            <div className="flex flex-col items-start justify-between gap-4 pt-2 md:flex-row md:items-center">
+              <div className="text-sm muted flex items-center gap-4 flex-wrap">
                 <span>Views: {problem?.views}</span>
                 <span>Empathy: {problem?.empathy}</span>
                 <span>Watching: {problem?.watching ?? 0}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full md:w-auto flex-col md:flex-row">
                 <button
-                  className="btn"
+                  className="btn w-full md:w-auto"
                   onClick={() => {
                     if (user) {
                       toggleWatching(id, user.uid)
@@ -131,7 +132,7 @@ export default function ProblemDetail() {
                             status: res.status ?? prev.status,
                           }));
                         })
-                        .catch((err) => setError(err.message));
+                        .catch((err) => setError(getErrorMessage(err)));
                     } else {
                       navigate("/login");
                     }
@@ -151,12 +152,12 @@ export default function ProblemDetail() {
                             empathy: res.empathy,
                           }));
                         })
-                        .catch((error) => setError(error.message));
+                        .catch((error) => setError(getErrorMessage(error)));
                     } else {
                       navigate("/login");
                     }
                   }}
-                  className={`btn ${empathized ? "" : "btn-primary"}`}
+                  className={`btn w-full md:w-auto ${empathized ? "" : "btn-primary"}`}
                 >
                   {empathized ? "Unempathize" : "Empathize"}
                 </button>
@@ -173,6 +174,7 @@ export default function ProblemDetail() {
           setProblem((prev) => ({ ...prev, status: status ?? prev?.status }))
         }
       />
+      <Footer />
     </>
   );
 }
@@ -188,7 +190,6 @@ function CommentSection({ problemId, setError, ownerId, onStatusChange }) {
         setComments(comments);
         setLoading(false);
       } catch (error) {
-        console.error("Error reading document:", error);
         setLoading(false);
       }
     };
@@ -294,8 +295,7 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
         return;
       }
     } catch (error) {
-      console.error("Error writing document:", error);
-      setError(error.message);
+      setError(getErrorMessage(error));
     }
   };
 
@@ -322,19 +322,19 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
 
   if (comment.status === "to-post") {
     return (
-      <div className="flex flex-col items-start gap-2">
+      <div className="flex flex-col items-start gap-2 w-full">
         <textarea
-          className="base-input-design w-2/3"
+          className="base-input-design w-full md:w-2/3"
           placeholder="Write your comment or Leave a solution link"
           value={text}
           onChange={(e) => setText(e.target.value)}
         ></textarea>
-        <div className="flex items-center gap-2">
-          <button className="btn btn-primary" onClick={postComment}>
+        <div className="flex items-center gap-2 w-full flex-col md:flex-row md:w-auto">
+          <button className="btn btn-primary w-full md:w-auto" onClick={postComment}>
             Post
           </button>
           <button
-            className="btn"
+            className="btn w-full md:w-auto"
             onClick={() => {
               setComments((prev) => prev.filter((x) => thisComment.commentId !== x.commentId));
             }}
@@ -347,16 +347,16 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
   } else {
     return (
       <div className="w-full flex flex-col items-start gap-2 p-2">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex gap-1">
-            <span className="tag">{thisComment?.userName}</span>
-            <span className="text-sm muted">
+        <div className="flex flex-col gap-2 w-full">
+          <div className="flex gap-1 items-center flex-wrap">
+            <span className="tag text-xs md:text-sm">{thisComment?.userName}</span>
+            <span className="text-xs md:text-sm muted">
               {thisComment?.createdAt ? timeCalc(thisComment.createdAt).text : ""}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <div>
-              <span className="cursor-pointer" onClick={()=>{
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1">
+              <span className="cursor-pointer text-xs" onClick={()=>{
                 if(disliked){
                   return;
                 }
@@ -366,12 +366,12 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
                     setLiked(res.liked);
                     setThisComment(prev=>({...prev,...res}))
                   })
-                  .catch((error) => setError(error.message));
+                  .catch((error) => setError(getErrorMessage(error)));
               }}>{liked ? "▲" : "△"}</span>
-              <span className="text-sm muted">{thisComment?.likes}</span>
+              <span className="text-xs muted">{thisComment?.likes}</span>
             </div>
-            <div>
-              <span className="cursor-pointer" onClick={()=>{
+            <div className="flex items-center gap-1">
+              <span className="cursor-pointer text-xs" onClick={()=>{
                 if(liked){
                   return;
                 }
@@ -381,98 +381,98 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
                     setDisliked(res.disliked);
                     setThisComment(prev=>({...prev,...res}))
                   })
-                  .catch((error) => setError(error.message));
+                  .catch((error) => setError(getErrorMessage(error)));
               }}>{disliked ? "▼" : "▽"}</span>
-              <span className="text-sm muted">{thisComment?.dislikes}</span>
+              <span className="text-xs muted">{thisComment?.dislikes}</span>
             </div>
+            <span
+              className="muted cursor-pointer text-xs"
+              onClick={() => {
+                if (!user) {
+                  navigate("/login");
+                  return;
+                }
+                if (thisComment?.userId !== user?.uid) {
+                  return;
+                }
+                setEditing((prev) => !prev);
+                setEditText(thisComment?.content || "");
+              }}
+            >
+              Edit
+            </span>
+            <span
+              className="muted cursor-pointer text-xs"
+              onClick={() => {
+                if (!user) {
+                  navigate("/login");
+                  return;
+                }
+                if (thisComment?.userId !== user?.uid) {
+                  return;
+                }
+                const ok = window.confirm("Are you sure you want to delete this comment?");
+                if (!ok) return;
+                deleteComment(thisComment.id)
+                  .then((res) => {
+                    if (!res) return;
+                    setComments((prev) => prev.filter((x) => x.id !== thisComment.id));
+                    setLoading(true);
+                  })
+                  .catch((error) => setError(getErrorMessage(error)));
+              }}
+            >
+              Delete
+            </span>
+            <span
+              className="muted cursor-pointer text-xs"
+              onClick={() => {
+                if (!user) {
+                  navigate("/login");
+                  return;
+                }
+                setReplying((prev) => !prev);
+                setReplyText("");
+              }}
+            >
+              Reply
+            </span>
+            <span
+              className={`cursor-pointer text-xs ${thisComment?.accepted ? 'text-green-600' : 'muted'}`}
+              onClick={() => {
+                if (!user) {
+                  navigate('/login');
+                  return;
+                }
+                // Only the problem author can accept
+                if (ownerId && user?.uid !== ownerId) {
+                  return;
+                }
+                toggleAccept(thisComment.id)
+                  .then((res) => {
+                    if (!res) return;
+                    setThisComment((prev) => ({ ...prev, accepted: res.accepted }));
+                    if (res.status && typeof onStatusChange === 'function') {
+                      onStatusChange(res.status);
+                    }
+                  })
+                  .catch((error) => setError(getErrorMessage(error)));
+              }}
+            >
+              {thisComment?.accepted ? "Accepted" : "Accept"}
+            </span>
           </div>
-          <span
-            className="muted cursor-pointer text-sm"
-            onClick={() => {
-              if (!user) {
-                navigate("/login");
-                return;
-              }
-              if (thisComment?.userId !== user?.uid) {
-                return;
-              }
-              setEditing((prev) => !prev);
-              setEditText(thisComment?.content || "");
-            }}
-          >
-            Edit
-          </span>
-          <span
-            className="muted cursor-pointer text-sm"
-            onClick={() => {
-              if (!user) {
-                navigate("/login");
-                return;
-              }
-              if (thisComment?.userId !== user?.uid) {
-                return;
-              }
-              const ok = window.confirm("Are you sure you want to delete this comment?");
-              if (!ok) return;
-              deleteComment(thisComment.id)
-                .then((res) => {
-                  if (!res) return;
-                  setComments((prev) => prev.filter((x) => x.id !== thisComment.id));
-                  setLoading(true);
-                })
-                .catch((error) => setError(error.message));
-            }}
-          >
-            Delete
-          </span>
-          <span
-            className="muted cursor-pointer text-sm"
-            onClick={() => {
-              if (!user) {
-                navigate("/login");
-                return;
-              }
-              setReplying((prev) => !prev);
-              setReplyText("");
-            }}
-          >
-            Reply
-          </span>
-          <span
-            className={`cursor-pointer text-sm ${thisComment?.accepted ? 'text-green-600' : 'muted'}`}
-            onClick={() => {
-              if (!user) {
-                navigate('/login');
-                return;
-              }
-              // Only the problem author can accept
-              if (ownerId && user?.uid !== ownerId) {
-                return;
-              }
-              toggleAccept(thisComment.id)
-                .then((res) => {
-                  if (!res) return;
-                  setThisComment((prev) => ({ ...prev, accepted: res.accepted }));
-                  if (res.status && typeof onStatusChange === 'function') {
-                    onStatusChange(res.status);
-                  }
-                })
-                .catch((error) => setError(error.message));
-            }}
-          >
-            {thisComment?.accepted ? "Accepted" : "Accept"}
-          </span>
         </div>
         {editing ? (
           <div className="flex flex-col items-start gap-2 w-full">
             <textarea
-              className="base-input-design w-2/3"
+              className="base-input-design w-full md:w-2/3"
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
             ></textarea>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full flex-col md:flex-row md:w-auto">
               <button
-                className="btn"
+                className="btn w-full md:w-auto"
                 onClick={() => {
                   if (!user) {
                     navigate("/login");
@@ -489,13 +489,13 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
                       setThisComment((prev) => ({ ...prev, content: toSave }));
                       setEditing(false);
                     })
-                    .catch((error) => setError(error.message));
+                    .catch((error) => setError(getErrorMessage(error)));
                 }}
               >
                 Save
               </button>
               <button
-                className="btn"
+                className="btn w-full md:w-auto"
                 onClick={() => {
                   setEditing(false);
                   setEditText(thisComment?.content || "");
@@ -509,16 +509,16 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
           <p className="leading-7 pl-1">{linkify(thisComment?.content || "")}</p>
         )}
         {replying && (
-          <div className="flex flex-col items-start gap-2 w-full mt-2 pl-6 border-l">
+          <div className="flex flex-col items-start gap-2 w-full mt-2 pl-0 md:pl-6 border-l-0 md:border-l">
             <textarea
-              className="base-input-design w-2/3"
+              className="base-input-design w-full md:w-2/3"
               placeholder={`Reply to @${thisComment?.userName}`}
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
             ></textarea>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full flex-col md:flex-row md:w-auto">
               <button
-                className="btn btn-primary"
+                className="btn btn-primary w-full md:w-auto"
                 onClick={async () => {
                   try {
                     if (!user) {
@@ -539,15 +539,14 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
                     setReplying(false);
                     setLoading(true);
                   } catch (error) {
-                    console.error("Error writing document:", error);
-                    setError(error.message);
+                    setError(getErrorMessage(error));
                   }
                 }}
               >
                 Reply
               </button>
               <button
-                className="btn"
+                className="btn w-full md:w-auto"
                 onClick={() => {
                   setReplying(false);
                   setReplyText("");

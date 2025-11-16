@@ -4,6 +4,7 @@ import { NavToHome } from "./App";
 import { Link, useNavigate } from "react-router";
 import ErrorAlert from "./ErrorAlert";
 import { getErrorMessage } from "./utils/errorMessages";
+import { Footer } from "./App";
 
 export default function Login() {
   const { signin } = useAuth();
@@ -33,7 +34,7 @@ export default function Login() {
         <h1 className="text-2xl font-bold">Login</h1>
         <form
           onSubmit={handleSubmit}
-          className="w-1/2 flex flex-col gap-2 mb-20"
+          className="w-full md:w-1/2 flex flex-col gap-2 mb-20 px-4"
         >
           <input
             type="email"
@@ -53,12 +54,13 @@ export default function Login() {
           </Link>
           <button
             type="submit"
-            className="p-2 bg-blue-500 text-white rounded-md"
+            className="p-2 bg-blue-500 text-white rounded-md w-full mt-4"
           >
             Login
           </button>
         </form>
       </main>
+      <Footer />
     </>
   );
 }

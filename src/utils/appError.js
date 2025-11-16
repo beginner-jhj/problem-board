@@ -1,12 +1,11 @@
-export function appError(code, message, details = undefined) {
-  const err = new Error(message || code || 'Error');
-  err.code = code || 'app/error';
-  if (details !== undefined) err.details = details;
+export function appError(code) {
+  const err = new Error(code);
+  err.code = code || 'app/unknown-error';
   return err;
 }
 
-export function assert(condition, code, message) {
+export function assert(condition, code) {
   if (!condition) {
-    throw appError(code, message);
+    throw appError(code);
   }
 }

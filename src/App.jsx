@@ -15,15 +15,22 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="nav-bar">
-        <div className="container w-full flex items-center justify-between">
+        <div className="container w-full flex items-center justify-between gap-2">
           <NavToHome />
-          <Link to="/post" className="btn btn-primary">
-            Post
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link to="/profile" className="btn md:hidden">
+              Profile
+            </Link>
+            <Link to="/post" className="btn btn-primary">
+              Post
+            </Link>
+          </div>
         </div>
       </header>
-      <main className="container grid grid-cols-[280px_1fr] gap-6 py-4 flex-1">
-        <MyInfo />
+      <main className="container grid grid-cols-1 gap-4 py-4 flex-1 md:grid-cols-[280px_1fr] md:gap-6">
+        <div className="hidden md:block">
+          <MyInfo />
+        </div>
         <PostList />
       </main>
       <Footer />
@@ -219,27 +226,23 @@ function FilterNav({ setProblems, setError }) {
 function ProblemCard({ index, problem }) {
   return (
     <Link to={`/problem/${problem?.id}`} className="card-row">
-      <div className="muted text-sm">{index + 1}</div>
+      <div className="muted text-xs hidden sm:block">{index + 1}</div>
       <div className="flex flex-col gap-1 min-w-0">
-        <h3 className="text-base font-medium leading-snug break-words min-w-0">
+        <h3 className="text-sm md:text-base font-medium leading-snug break-words min-w-0">
           {problem?.title}
         </h3>
         {problem?.status && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <span className="tag">{problem.status}</span>
           </div>
         )}
       </div>
-      <div className="flex flex-col items-start md:items-end gap-2 text-sm">
-        <div className="flex items-center gap-2">
-          <span className="tag">{problem?.category}</span>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 muted border-l pl-3">
-          <span title="Views">Viewed {problem?.views}</span>
-          <span title="Empathy">Empathy {problem?.empathy}</span>
-          <span title="Watching">Watching {problem?.watching}</span>
-          <span title="Created at">{timeCalc(problem?.createdAt).text}</span>
-        </div>
+      <div className="flex items-center gap-2 text-xs md:text-sm flex-wrap justify-end">
+        <span className="tag">{problem?.category}</span>
+        <span title="Views" className="muted">Viewed {problem?.views}</span>
+        <span title="Empathy" className="hidden md:inline muted">Empathy {problem?.empathy}</span>
+        <span title="Watching" className="hidden md:inline muted">Watching {problem?.watching}</span>
+        <span title="Created at" className="muted">{timeCalc(problem?.createdAt).text}</span>
       </div>
     </Link>
   );

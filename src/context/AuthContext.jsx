@@ -16,7 +16,7 @@ export default function AuthProvider({children}){
                     await getUserProfile(user.uid);
                 } catch (error) {
                     // Profile doesn't exist, create it
-                    if (error.code === "db/not-found" || error.message.includes("not found")) {
+                    if (error.code === "user/profile-not-found") {
                         try {
                             await createUserProfile(user.uid, {
                                 displayName: user.displayName || "Unknown User",

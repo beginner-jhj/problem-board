@@ -6,6 +6,7 @@ import { useAuth } from "./context/AuthContext";
 import FeatureInput from "./components/FeatureInput";
 import ErrorAlert from "./ErrorAlert";
 import { getErrorMessage } from "./utils/errorMessages";
+import { Footer } from "./App";
 
 function PostProblem() {
   const [title, setTitle] = useState("");
@@ -28,7 +29,7 @@ function PostProblem() {
     e.preventDefault();
     try {
       if (!title || !description || !category || !frequency) {
-        setError("Please fill in all required fields");
+        setError(getErrorMessage('validation/missing-fields'));
         return;
       }
       const docRef = await addProblem(
@@ -56,7 +57,7 @@ function PostProblem() {
         <NavToHome message="Share your problems with others" />
       </header>
       <main className="w-screen h-[calc(100vh-50px)] p-4 flex items-center justify-center">
-        <form className="w-1/2 gap-2 flex flex-col mb-20">
+        <form className="w-full md:w-1/2 gap-2 flex flex-col mb-20 px-4">
           <div className="flex flex-col">
             <h1>*Title</h1>
             <input
@@ -81,75 +82,93 @@ function PostProblem() {
           </div>
           <div className="flex flex-col">
             <h1>*Category</h1>
-            <div className="flex gap-2">
-              <input
-                type="radio"
-                name="category"
-                value="general"
-                onChange={(e) => setCategory(e.target.value)}
-              />
-              <label>General</label>
-              <input
-                type="radio"
-                name="category"
-                value="work"
-                onChange={(e) => setCategory(e.target.value)}
-              />
-              <label>Work</label>
-              <input
-                type="radio"
-                name="category"
-                value="health"
-                onChange={(e) => setCategory(e.target.value)}
-              />
-              <label>Health</label>
-              <input
-                type="radio"
-                name="category"
-                value="study"
-                onChange={(e) => setCategory(e.target.value)}
-              />
-              <label>Study</label>
-              <input
-                type="radio"
-                name="category"
-                value="finance"
-                onChange={(e) => setCategory(e.target.value)}
-              />
-              <label>Finance</label>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="category"
+                  value="general"
+                  onChange={(e) => setCategory(e.target.value)}
+                />
+                <span>General</span>
+              </label>
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="category"
+                  value="work"
+                  onChange={(e) => setCategory(e.target.value)}
+                />
+                <span>Work</span>
+              </label>
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="category"
+                  value="health"
+                  onChange={(e) => setCategory(e.target.value)}
+                />
+                <span>Health</span>
+              </label>
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="category"
+                  value="study"
+                  onChange={(e) => setCategory(e.target.value)}
+                />
+                <span>Study</span>
+              </label>
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="category"
+                  value="finance"
+                  onChange={(e) => setCategory(e.target.value)}
+                />
+                <span>Finance</span>
+              </label>
             </div>
           </div>
           <div className="flex flex-col">
             <h1>*How often?</h1>
-            <div className="flex gap-2">
-              <input
-                type="radio"
-                name="frequency"
-                value="daily"
-                onChange={(e) => setFrequency(e.target.value)}
-              />
-              <label>Dayily</label>
-              <input
-                type="radio"
-                name="frequency"
-                value="weekly"
-                onChange={(e) => setFrequency(e.target.value)}
-              />
-              <label>Weekly</label>
-              <input
-                type="radio"
-                name="frequency"
-                value="monthly"
-                onChange={(e) => setFrequency(e.target.value)}
-              />
-              <label>Monthly</label>
-              <input
-                type="radio"
-                name="frequency"
-                value="sometimes"
-                onChange={(e) => setFrequency(e.target.value)}
-              />
-              <label>Sometimes</label>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="frequency"
+                  value="daily"
+                  onChange={(e) => setFrequency(e.target.value)}
+                />
+                <span>Daily</span>
+              </label>
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="frequency"
+                  value="weekly"
+                  onChange={(e) => setFrequency(e.target.value)}
+                />
+                <span>Weekly</span>
+              </label>
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="frequency"
+                  value="monthly"
+                  onChange={(e) => setFrequency(e.target.value)}
+                />
+                <span>Monthly</span>
+              </label>
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="frequency"
+                  value="sometimes"
+                  onChange={(e) => setFrequency(e.target.value)}
+                />
+                <span>Sometimes</span>
+              </label>
             </div>
           </div>
           <div className="flex flex-col">
@@ -171,13 +190,14 @@ function PostProblem() {
             <span>Watching: 0</span>
           </div>
           <button
-            className="p-2 bg-blue-500 text-white rounded-md"
+            className="p-2 bg-blue-500 text-white rounded-md w-full md:w-auto mt-4"
             onClick={handleSubmit}
           >
             Post
           </button>
         </form>
       </main>
+      <Footer />
     </>
   );
 }

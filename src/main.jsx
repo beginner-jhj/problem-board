@@ -9,12 +9,14 @@ import AuthProvider from './context/AuthContext'
 import Protector from './Protector'
 import ProblemDetail from './ProblemDetail.jsx'
 import EditProblem from './EditProblem.jsx'
+import Profile from './Profile.jsx'
 
 createRoot(document.getElementById('root')).render(
   <AuthProvider>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />
+        <Route path='/profile' element={<Profile />} />
         <Route path='/post' element={<Protector><PostProblem /></Protector>} />
         <Route path='/signup' element={<SignUp />} />
         <Route path='/login' element={<Login />} />

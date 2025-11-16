@@ -3,7 +3,7 @@ import { getDocById, updateProblem, deleteProblem } from "./firebase/problemHand
 import { useAuth } from "./context/AuthContext";
 import { Link, useNavigate, useParams } from "react-router";
 import FeatureInput from "./components/FeatureInput";
-import { NavToHome } from "./App";
+import { NavToHome, Footer } from "./App";
 import Loader from "./Loader";
 import ErrorAlert from "./ErrorAlert";
 import { getErrorMessage } from "./utils/errorMessages";
@@ -45,7 +45,7 @@ export default function EditProblem() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title || !description || !category || !frequency) {
-      alert("Please fill in all fields");
+      setError(getErrorMessage('validation/missing-fields'));
       return;
     }
     try {
@@ -171,19 +171,21 @@ export default function EditProblem() {
           </form>
         )}
       </main>
-      <DeleteConfirmModal id={id} open={openDeleteModal} setOpen={setOpenDeleteModal}/>
+      <DeleteConfirmModal id={id} open={openDeleteModal} setOpen={setOpenDeleteModal} setError={setError} />
     </>
   );
 }
 
-function DeleteConfirmModal({id, open=false, setOpen}){
+function DeleteConfirmModal({id, open=false, setOpen, setError}){
     const navigate = useNavigate();
   const { user } = useAuth();
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
     if (!user) {
-      alert('You must be logged in to delete this problem');
+      if (typeof setError === 'function') {
+        setError('You must be logged in to delete this problem');
+      }
       return;
     }
     try {
@@ -193,18 +195,20 @@ function DeleteConfirmModal({id, open=false, setOpen}){
     } catch (err) {
       console.error('Delete failed:', err);
       // Show a friendly message
-      alert(err && (err.message || err.code) ? (err.message || err.code) : 'Failed to delete problem');
+      if (typeof setError === 'function') {
+        setError(getErrorMessage(err));
+      }
     } finally {
       setDeleting(false);
     }
   };
     return (
-        <div className={`fixed top-0 left-0 right-0 bottom-0 z-50 w-full h-full flex items-center justify-center bg-black/50 ${open ? "flex" : "hidden"}`}>
-            <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col gap-2">
-                <p className="text-center">Are you sure you want to delete this problem? <br/>This action cannot be undone.</p>
-                <div className="flex items-center gap-2">
-          <button onClick={handleDelete} disabled={deleting} className="btn btn-warn">{deleting ? 'Deleting...' : 'Yes'}</button>
-                    <button onClick={()=>setOpen(false)} className="btn btn-primary">No</button>
+        <div className={`fixed top-0 left-0 right-0 bottom-0 z-50 w-full h-full flex items-center justify-center bg-black/50 ${open ? "flex" : "hidden"} p-4`}>
+            <div className="bg-white p-4 md:p-6 rounded-lg shadow-lg flex flex-col gap-2 w-full md:max-w-sm">
+                <p className="text-center text-sm md:text-base">Are you sure you want to delete this problem? <br/>This action cannot be undone.</p>
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <button onClick={handleDelete} disabled={deleting} className="btn btn-warn w-full md:w-auto">{deleting ? 'Deleting...' : 'Yes'}</button>
+                    <button onClick={()=>setOpen(false)} className="btn btn-primary w-full md:w-auto">No</button>
                 </div>
             </div>
         </div>

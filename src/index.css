@@ -94,6 +94,14 @@ button{ cursor: pointer; }
 }
 .tag:hover, .category:hover{ background: color-mix(in srgb, var(--tag) 18%, transparent); }
 
+/* Mobile responsive tag padding */
+@media (max-width: 639px) {
+  .tag, .category {
+    padding: 0.0625rem 0.375rem;
+    font-size: 0.75rem;
+  }
+}
+
 .card{
   background: var(--surface);
   border: 1px solid var(--border);
@@ -105,6 +113,15 @@ button{ cursor: pointer; }
 }
 .card-row:first-child{ border-top: 0; }
 .card-row:hover{ background: color-mix(in srgb, var(--surface) 94%, var(--text)); }
+
+/* Mobile responsive card-row */
+@media (max-width: 639px) {
+  .card-row {
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+}
 
 .nav-bar{
   height: 56px; display: flex; align-items: center; justify-content: space-between;
@@ -140,4 +157,12 @@ button{ cursor: pointer; }
 @keyframes rotation {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Mobile-first responsive helpers */
+@media (min-width: 768px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }

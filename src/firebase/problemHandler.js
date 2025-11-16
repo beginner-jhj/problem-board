@@ -15,11 +15,11 @@ import { assert, appError } from "../utils/appError";
 
 export const addProblem = async (problem, userId, userName) => {
   try {
-    assert(userId && typeof userId === 'string', 'auth/unauthenticated', 'User must be authenticated');
-    assert(problem && typeof problem === 'object', 'problem/invalid-args', 'Problem payload is required');
+    assert(userId && typeof userId === 'string', 'auth/unauthenticated');
+    assert(problem && typeof problem === 'object', 'problem/invalid-args');
     const { title, description, category, frequency } = problem || {};
-    assert(title && description && category && frequency, 'problem/missing-fields', 'Missing required problem fields');
-    assert(userName && typeof userName === 'string', 'user/missing-name', 'User name is required');
+    assert(title && description && category && frequency, 'problem/missing-fields');
+    assert(userName && typeof userName === 'string', 'user/missing-name');
     const docRef = await addDoc(collection(db, "problems"), {
       ...problem,
       createdAt: serverTimestamp(),
@@ -35,18 +35,17 @@ export const addProblem = async (problem, userId, userName) => {
     });
     return docRef;
   } catch (error) {
-    console.error("Error writing document:", error);
     throw error;
   }
 };
 
 export const toggleWatching = async (problemId, userId) => {
   try {
-    assert(problemId, 'problem/invalid-id', 'Problem ID is required');
-    assert(userId, 'auth/unauthenticated', 'User must be authenticated');
+    assert(problemId, 'problem/invalid-id');
+    assert(userId, 'auth/unauthenticated');
     const docRef = doc(db, "problems", problemId);
     const snap = await getDoc(docRef);
-    if (!snap.exists()) throw appError('db/not-found', 'Problem not found');
+    if (!snap.exists()) throw appError('problem/not-found');
     const data = snap.data();
     const already = Array.isArray(data.watchingBy) && data.watchingBy.includes(userId);
     if (already) {
@@ -63,15 +62,14 @@ export const toggleWatching = async (problemId, userId) => {
       return { watching: nextCount, watchingBy: nextArr, watched: true, status: nextStatus };
     }
   } catch (error) {
-    console.error("Error toggling watching:", error);
     throw error;
   }
 };
 
 export const toggleEmpathy = async (problemId, userId) => {
   try {
-    assert(problemId, 'problem/invalid-id', 'Problem ID is required');
-    assert(userId, 'auth/unauthenticated', 'User must be authenticated');
+    assert(problemId, 'problem/invalid-id');
+    assert(userId, 'auth/unauthenticated');
     const docRef = doc(db, "problems", problemId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
@@ -97,18 +95,17 @@ export const toggleEmpathy = async (problemId, userId) => {
         return { empathy: nextCount, empathizedBy: nextArr, empathized: true };
       }
     } else {
-      throw appError('db/not-found', 'Problem not found');
+      throw appError('problem/not-found');
     }
   } catch (error) {
-    console.error("Error reading document:", error);
     throw error;
   }
 };
 
 export const increaseView = async (problemId, userId) => {
   try {
-    assert(problemId, 'problem/invalid-id', 'Problem ID is required');
-    assert(userId, 'auth/unauthenticated', 'User must be authenticated');
+    assert(problemId, 'problem/invalid-id');
+    assert(userId, 'auth/unauthenticated');
     const docRef = doc(db, "problems", problemId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
@@ -124,17 +121,16 @@ export const increaseView = async (problemId, userId) => {
         viewsBy: [...viewsBy, userId],
       });
     } else {
-      throw appError('db/not-found', 'Problem not found');
+      throw appError('problem/not-found');
     }
   } catch (error) {
-    console.error("Error reading document:", error);
     throw error;
   }
 };
 
 export const updateProblem = async (problemId, problem) => {
   try {
-    assert(problemId, 'problem/invalid-id', 'Problem ID is required');
+    assert(problemId, 'problem/invalid-id');
     const docRef = doc(db, "problems", problemId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
@@ -142,8 +138,7 @@ export const updateProblem = async (problemId, problem) => {
         problem || {};
       assert(
         title !== undefined || description !== undefined || category !== undefined || frequency !== undefined || features !== undefined,
-        'problem/no-updates',
-        'Nothing to update'
+        'problem/no-updates'
       );
       await updateDoc(docRef, {
         ...(title !== undefined ? { title } : {}),
@@ -154,44 +149,53 @@ export const updateProblem = async (problemId, problem) => {
         updatedAt: serverTimestamp(),
       });
     } else {
-      throw appError('db/not-found', 'Problem not found');
+      throw appError('problem/not-found');
     }
   } catch (error) {
-    console.error("Error reading document:", error);
     throw error;
   }
 };
 
 export const deleteProblem = async (problemId, userId) => {
   try {
-    assert(problemId, 'problem/invalid-id', 'Problem ID is required');
-    assert(userId && typeof userId === 'string', 'auth/unauthenticated', 'User must be authenticated to delete a problem');
+    assert(problemId, 'problem/invalid-id');
+    assert(userId && typeof userId === 'string', 'auth/unauthenticated');
     const docRef = doc(db, "problems", problemId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       await deleteDoc(docRef);
       return true;
     } else {
-      throw appError('db/not-found', 'Problem not found');
+      throw appError('problem/not-found');
     }
   } catch (error) {
-    console.error("Error deleting document:", error);
     throw error;
   }
 };
 
+export const deleteProblemsByUserId = async (userId)=>{
+  try{
+    const q = query(collection(db, "problems"), where("userId", "==", userId));
+    const querySnapshot = await getDocs(q);
+    const deletePromises = querySnapshot.docs.map((docSnap) => deleteDoc(doc(db, "problems", docSnap.id)));
+    await Promise.all(deletePromises);
+    return true;
+  }catch(error){
+    throw error;
+  }
+}
+
 export const getDocById = async (id) => {
   try {
-    assert(id, 'problem/invalid-id', 'Problem ID is required');
+    assert(id, 'problem/invalid-id');
     const docRef = doc(db, "problems", id);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       return docSnap.data();
     } else {
-      throw appError('db/not-found', 'Problem not found');
+      throw appError('problem/not-found');
     }
   } catch (error) {
-    console.error("Error reading document:", error);
     throw error;
   }
 };
@@ -207,7 +211,6 @@ export const getAllDocs = async () => {
     });
     return problems;
   } catch (error) {
-    console.error("Error reading documents:", error);
     throw error;
   }
 };
@@ -226,7 +229,6 @@ export const getDocsByCategory = async (category) => {
     }));
     return problems;
   } catch (error) {
-    console.error("Error reading documents:", error);
     throw error;
   }
 };
@@ -242,7 +244,6 @@ export const getDocsByUserId = async (userId) => {
     }));
     return problems;
   } catch (error) {
-    console.error("Error reading documents:", error);
     throw error;
   }
 };
