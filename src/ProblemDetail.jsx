@@ -52,7 +52,6 @@ export default function ProblemDetail() {
     getProblem();
   }, [id, user]);
 
-  // Use Helmet for dynamic title/meta
 
   return (
     <>
