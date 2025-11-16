@@ -6,6 +6,7 @@ import { NavToHome, Footer } from "./App";
 import ErrorAlert from "./ErrorAlert";
 import { deleteAccountWithReauth } from "./firebase/auth";
 import { getErrorMessage } from "./utils/errorMessages";
+import { Helmet } from 'react-helmet-async';
 
 export default function Profile() {
     const { user, logout } = useAuth();
@@ -48,6 +49,10 @@ export default function Profile() {
 
     return (
         <>
+            <Helmet>
+                <title>Profile — Problem Board</title>
+                <meta name="description" content="View and manage your problems and account on Problem Board." />
+            </Helmet>
             <ErrorAlert isOpen={error.length > 0} message={error} />
             <header className="nav-bar">
                 <div className="container w-full flex items-center justify-between">

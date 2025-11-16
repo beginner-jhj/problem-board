@@ -7,6 +7,7 @@ import FeatureInput from "./components/FeatureInput";
 import ErrorAlert from "./ErrorAlert";
 import { getErrorMessage } from "./utils/errorMessages";
 import { Footer } from "./App";
+import { Helmet } from 'react-helmet-async';
 
 function PostProblem() {
   const [title, setTitle] = useState("");
@@ -52,6 +53,10 @@ function PostProblem() {
 
   return (
     <>
+      <Helmet>
+        <title>Post a Problem — Problem Board</title>
+        <meta name="description" content="Share a real problem and get feedback from the community on Problem Board." />
+      </Helmet>
       <ErrorAlert isOpen={error.length > 0} message={error} />
       <header className="w-screen h-[50px] flex items-center justify-between px-4 py-2">
         <NavToHome message="Share your problems with others" />

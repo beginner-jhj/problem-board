@@ -5,6 +5,7 @@ import { Link , useNavigate} from "react-router";
 import ErrorAlert from "./ErrorAlert";
 import { getErrorMessage } from "./utils/errorMessages";
 import { Footer } from "./App";
+import { Helmet } from 'react-helmet-async';
 
 export default function SignUp() {
   const { signup } = useAuth();
@@ -27,6 +28,10 @@ export default function SignUp() {
   };
   return (
     <>
+      <Helmet>
+        <title>Sign Up — Problem Board</title>
+        <meta name="description" content="Create an account on Problem Board to share problems and solutions." />
+      </Helmet>
       <ErrorAlert isOpen={error.length > 0} message={error} />
       <header className="w-screen h-[50px] flex items-center justify-between px-4 py-2">
         <NavToHome />

@@ -7,6 +7,7 @@ import { NavToHome, Footer } from "./App";
 import Loader from "./Loader";
 import ErrorAlert from "./ErrorAlert";
 import { getErrorMessage } from "./utils/errorMessages";
+import { Helmet } from 'react-helmet-async';
 
 export default function EditProblem() {
   const { id } = useParams();
@@ -58,6 +59,10 @@ export default function EditProblem() {
 
   return (
     <>
+      <Helmet>
+        <title>Edit Problem — Problem Board</title>
+        <meta name="description" content="Edit your problem post on Problem Board." />
+      </Helmet>
       <ErrorAlert isOpen={error.length > 0} message={error} />
       <header className="nav-bar">
         <div className="container w-full flex items-center justify-between">

@@ -2,6 +2,7 @@ import { useParams } from "react-router";
 import { getDocById } from "./firebase/problemHandler";
 import { addComment, getAllComments, toggleLike, toggleDislike, updateComment, deleteComment, toggleAccept } from "./firebase/commentHanler";
 import { useEffect, useState } from "react";
+import { Helmet } from 'react-helmet-async';
 import ErrorAlert from "./ErrorAlert";
 import { NavToHome, Footer } from "./App";
 import Loader from "./Loader";
@@ -51,14 +52,18 @@ export default function ProblemDetail() {
     getProblem();
   }, [id, user]);
 
-  useEffect(()=>{
-    if(problem){
-      document.title = `${problem?.title}`;
-    }
-  }, [problem])
+  // Use Helmet for dynamic title/meta
 
   return (
     <>
+      {problem && (
+        <Helmet>
+          <title>{problem?.title} — Problem Board</title>
+          <meta name="description" content={problem?.description ? problem.description.slice(0, 150) : 'Problem detail on Problem Board'} />
+          <meta property="og:title" content={problem?.title} />
+          <meta property="og:description" content={problem?.description ? problem.description.slice(0, 150) : ''} />
+        </Helmet>
+      )}
       <ErrorAlert isOpen={error.length > 0} message={error} />
       <header className="nav-bar">
         <div className="container w-full flex items-center justify-between">

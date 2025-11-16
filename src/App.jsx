@@ -9,32 +9,50 @@ import { useState, useEffect } from "react";
 import Loader from "./Loader";
 import ErrorAlert from "./ErrorAlert";
 import { timeCalc } from "./utils/timeAgo";
+import { Helmet } from 'react-helmet-async';
 import { getErrorMessage } from "./utils/errorMessages";
 
 function App() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="nav-bar">
-        <div className="container w-full flex items-center justify-between gap-2">
-          <NavToHome />
-          <div className="flex items-center gap-2">
-            <Link to="/profile" className="btn md:hidden">
-              Profile
-            </Link>
-            <Link to="/post" className="btn btn-primary">
-              Post
-            </Link>
+    <>
+      <Helmet>
+        <title>Problem Board - Find Real Problems to Solve</title>
+        <meta name="description" content="Discover everyday problems that need solutions. Get inspiration for your next project by exploring real-world challenges." />
+
+        <meta property="og:title" content="Problem Board" />
+        <meta property="og:description" content="Find real-world problems to solve" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://theproblemboard.com" />
+        <meta property="og:image" content="https://theproblemboard.com/og-image.png" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Problem Board" />
+        <meta name="twitter:description" content="Find real-world problems to solve" />
+        <meta name="twitter:image" content="https://theproblemboard.com/og-image.png" />
+      </Helmet>
+      <div className="min-h-screen flex flex-col">
+        <header className="nav-bar">
+          <div className="container w-full flex items-center justify-between gap-2">
+            <NavToHome />
+            <div className="flex items-center gap-2">
+              <Link to="/profile" className="btn md:hidden">
+                Profile
+              </Link>
+              <Link to="/post" className="btn btn-primary">
+                Post
+              </Link>
+            </div>
           </div>
-        </div>
-      </header>
-      <main className="container grid grid-cols-1 gap-4 py-4 flex-1 md:grid-cols-[280px_1fr] md:gap-6">
-        <div className="hidden md:block">
-          <MyInfo />
-        </div>
-        <PostList />
-      </main>
-      <Footer />
-    </div>
+        </header>
+        <main className="container grid grid-cols-1 gap-4 py-4 flex-1 md:grid-cols-[280px_1fr] md:gap-6">
+          <div className="hidden md:block">
+            <MyInfo />
+          </div>
+          <PostList />
+        </main>
+        <Footer />
+      </div>
+    </>
   );
 }
 
@@ -51,7 +69,7 @@ function MyInfo() {
   const { user, logout } = useAuth();
   const [myProblems, setMyProblems] = useState([]);
   useEffect(() => {
-    if(user){
+    if (user) {
       getDocsByUserId(user.uid).then((problems) => {
         setMyProblems(problems);
       });
@@ -84,10 +102,10 @@ function MyInfo() {
         myProblems.map((problem, index) => (
           <div key={index} className="flex flex-col">
             <Link to={`/problem/${problem.id}`}>
-              <h3 className="text-base">{problem.title.length>20?problem.title.slice(0,20)+'...':problem.title}</h3>
+              <h3 className="text-base">{problem.title.length > 20 ? problem.title.slice(0, 20) + '...' : problem.title}</h3>
             </Link>
             <p className="muted text-sm">
-              Views {problem.views} | Empathy {problem.empathy}{" "} | Watching {problem.watching}{" "}<span className="cursor-pointer" onClick={()=>navigate(`/edit/${problem.id}`)}>✎</span>
+              Views {problem.views} | Empathy {problem.empathy}{" "} | Watching {problem.watching}{" "}<span className="cursor-pointer" onClick={() => navigate(`/edit/${problem.id}`)}>✎</span>
             </p>
           </div>
         ))}
@@ -251,12 +269,6 @@ function ProblemCard({ index, problem }) {
 export default App;
 
 export function Footer() {
-    useEffect(() => {
-      if(window.location.pathname.startsWith('/problem/')){
-        return;
-      }
-      document.title = `Problem Board`;
-  }, []);
   return (
     <footer className="border-t surface mt-8">
       <div className="container py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
