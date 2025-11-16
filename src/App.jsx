@@ -251,6 +251,12 @@ function ProblemCard({ index, problem }) {
 export default App;
 
 export function Footer() {
+    useEffect(() => {
+      if(window.location.pathname.startsWith('/problem/')){
+        return;
+      }
+      document.title = `Problem Board`;
+  }, []);
   return (
     <footer className="border-t surface mt-8">
       <div className="container py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
