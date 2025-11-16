@@ -51,6 +51,12 @@ export default function ProblemDetail() {
     getProblem();
   }, [id, user]);
 
+  useEffect(()=>{
+    if(problem){
+      document.title = `${problem?.title}`;
+    }
+  }, [problem])
+
   return (
     <>
       <ErrorAlert isOpen={error.length > 0} message={error} />
