@@ -270,12 +270,11 @@ export default App;
 
 export function Footer() {
   return (
-    <footer className="border-t surface mt-8">
-      <div className="container py-3 flex flex-wrap items-center justify-between gap-3 text-sm">
+    <footer className="border-t w-full py-3 mt-10 md:absolute md:bottom-0">
+      <div className="container flex flex-wrap items-center justify-between gap-3 text-sm">
         <div className="muted">© {new Date().getFullYear()} Problem Board</div>
         <nav className="flex flex-wrap items-center gap-3">
           <Link className="muted" to="/post">Post a Problem</Link>
-          <Link className="muted" to="/">Browse Problems</Link>
           <Link className="muted" to="/login">Login / Sign Up</Link>
         </nav>
         <div>

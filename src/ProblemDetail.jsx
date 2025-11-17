@@ -243,7 +243,7 @@ function CommentSection({ problemId, setError, ownerId, onStatusChange }) {
   };
 
   return (
-    <section className="container">
+    <section className="container min-h-[200px]">
       {loading && (
         <div className="w-full flex items-center justify-center">
           <Loader />
