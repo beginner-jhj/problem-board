@@ -94,6 +94,28 @@ button{ cursor: pointer; }
 }
 .tag:hover, .category:hover{ background: color-mix(in srgb, var(--tag) 18%, transparent); }
 
+/* Interactive category filter styling */
+.category-filter{
+  display: inline-flex; align-items: center; gap: .25rem;
+  padding: .125rem .5rem; border-radius: .375rem;
+  background: transparent;
+  border: none; color: transparent; text-shadow: 0 0 0 var(--muted);
+  font-size: .8125rem; line-height: 1.25rem;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all .2s ease;
+}
+.category-filter:hover{
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+.category-filter.active{
+  color: var(--primary-ink);
+  text-shadow: 0 0 0 var(--primary);
+  background: var(--primary);
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.4);
+}
+
 /* Mobile responsive tag padding */
 @media (max-width: 639px) {
   .tag, .category {

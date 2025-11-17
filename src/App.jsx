@@ -198,34 +198,34 @@ function FilterNav({ setProblems, setError }) {
   return (
     <div className="w-full flex items-center justify-end">
       <div className="list-header">
-        <span className="category" onClick={() => setCategory("all")}>
+        <span className={`category-filter ${category === "all" ? "active" : ""}`} onClick={() => setCategory("all")}>
           All
         </span>
-        <span className="category" onClick={() => setCategory("general")}>
+        <span className={`category-filter ${category === "general" ? "active" : ""}`} onClick={() => setCategory("general")}>
           General
         </span>
-        <span className="category" onClick={() => setCategory("work")}>
+        <span className={`category-filter ${category === "work" ? "active" : ""}`} onClick={() => setCategory("work")}>
           Work
         </span>
-        <span className="category" onClick={() => setCategory("health")}>
+        <span className={`category-filter ${category === "health" ? "active" : ""}`} onClick={() => setCategory("health")}>
           Health
         </span>
-        <span className="category" onClick={() => setCategory("study")}>
+        <span className={`category-filter ${category === "study" ? "active" : ""}`} onClick={() => setCategory("study")}>
           Study
         </span>
-        <span className="category" onClick={() => setCategory("finance")}>
+        <span className={`category-filter ${category === "finance" ? "active" : ""}`} onClick={() => setCategory("finance")}>
           Finance
         </span>
-        <span className="category" onClick={() => setStatus("all")}>
+        <span className={`category-filter ${status === "all" ? "active" : ""}`} onClick={() => setStatus("all")}>
           Status: All
         </span>
-        <span className="category" onClick={() => setStatus("Open")}>
+        <span className={`category-filter ${status === "Open" ? "active" : ""}`} onClick={() => setStatus("Open")}>
           Open
         </span>
-        <span className="category" onClick={() => setStatus("Trending")}>
+        <span className={`category-filter ${status === "Trending" ? "active" : ""}`} onClick={() => setStatus("Trending")}>
           Trending
         </span>
-        <span className="category" onClick={() => setStatus("Resolved")}>
+        <span className={`category-filter ${status === "Resolved" ? "active" : ""}`} onClick={() => setStatus("Resolved")}>
           Resolved
         </span>
         <select
@@ -266,8 +266,6 @@ function ProblemCard({ index, problem }) {
   );
 }
 
-export default App;
-
 export function Footer() {
   return (
     <footer className="border-t w-full py-3 mt-10 md:absolute md:bottom-0">
@@ -284,3 +282,6 @@ export function Footer() {
     </footer>
   );
 }
+
+
+export default App;
