@@ -189,7 +189,7 @@ function PostProblem() {
             </div>
             <div className="flex flex-col gap-2">
               {features.map((feature, index) => (
-                <FeatureInput key={index} index={index + 1} setFeatures={setFeatures} features={feature} />
+                <FeatureInput key={index} index={index + 1} setFeatures={setFeatures} features={features} />
               ))}
             </div>
           </div>
