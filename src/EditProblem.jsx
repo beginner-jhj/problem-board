@@ -103,7 +103,11 @@ export default function EditProblem() {
                 className="base-input-design"
                 placeholder="Please describe your problem specifically."
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = e.target.scrollHeight + 'px';
+                }}
               />
             </section>
 
@@ -175,7 +179,7 @@ export default function EditProblem() {
             <div className="flex items-center justify-end gap-2">
               <Link to={`/problem/${id}`} className="btn">Cancel</Link>
               <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Saving...' : 'Save changes'}</button>
-              <button type="button" className="btn btn-warn" onClick={()=>setOpenDeleteModal(true)}>Delete</button>
+              <button type="button" className="btn btn-warn" onClick={() => setOpenDeleteModal(true)}>Delete</button>
             </div>
           </form>
         )}
@@ -185,8 +189,8 @@ export default function EditProblem() {
   );
 }
 
-function DeleteConfirmModal({id, open=false, setOpen, setError}){
-    const navigate = useNavigate();
+function DeleteConfirmModal({ id, open = false, setOpen, setError }) {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [deleting, setDeleting] = useState(false);
 
@@ -211,15 +215,15 @@ function DeleteConfirmModal({id, open=false, setOpen, setError}){
       setDeleting(false);
     }
   };
-    return (
-        <div className={`fixed top-0 left-0 right-0 bottom-0 z-50 w-full h-full flex items-center justify-center bg-black/50 ${open ? "flex" : "hidden"} p-4`}>
-            <div className="bg-white p-4 md:p-6 rounded-lg shadow-lg flex flex-col gap-2 w-full md:max-w-sm">
-                <p className="text-center text-sm md:text-base">Are you sure you want to delete this problem? <br/>This action cannot be undone.</p>
-                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+  return (
+    <div className={`fixed top-0 left-0 right-0 bottom-0 z-50 w-full h-full flex items-center justify-center bg-black/50 ${open ? "flex" : "hidden"} p-4`}>
+      <div className="bg-white p-4 md:p-6 rounded-lg shadow-lg flex flex-col gap-2 w-full md:max-w-sm">
+        <p className="text-center text-sm md:text-base">Are you sure you want to delete this problem? <br />This action cannot be undone.</p>
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <button onClick={handleDelete} disabled={deleting} className="btn btn-warn w-full md:w-auto">{deleting ? 'Deleting...' : 'Yes'}</button>
-                    <button onClick={()=>setOpen(false)} className="btn btn-primary w-full md:w-auto">No</button>
-                </div>
-            </div>
+          <button onClick={() => setOpen(false)} className="btn btn-primary w-full md:w-auto">No</button>
         </div>
-    )
+      </div>
+    </div>
+  )
 }

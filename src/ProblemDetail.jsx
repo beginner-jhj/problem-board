@@ -15,6 +15,7 @@ import {
 import { useNavigate } from "react-router";
 import { timeCalc } from "./utils/timeAgo";
 import { getErrorMessage } from "./utils/errorMessages";
+import { linkify } from "./utils/linkify.jsx";
 
 export default function ProblemDetail() {
   const { id } = useParams();
@@ -108,7 +109,7 @@ export default function ProblemDetail() {
 
             <section className="flex flex-col gap-2">
               <h2 className="text-base font-medium">Description</h2>
-              <p className="text-sm">{problem?.description}</p>
+              <p className="text-sm text-justify">{linkify(problem?.description)}</p>
             </section>
 
             {Array.isArray(problem?.features) &&
@@ -336,26 +337,6 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, own
     }
   };
 
-  const linkify = (text) => {
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-
-    return text.split(urlRegex).map((part, index) => {
-      if (part.match(urlRegex)) {
-        return (
-          <a
-            key={index}
-            href={part}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:underline break-all"
-          >
-            {part}
-          </a>
-        );
-      }
-      return part;
-    });
-  };
 
   if (comment.status === "to-post") {
     return (

@@ -1,5 +1,5 @@
 import { NavToHome } from "./App";
-import { useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { addProblem } from "./firebase/problemHandler";
 import { useNavigate } from "react-router";
 import { useAuth } from "./context/AuthContext";
@@ -21,9 +21,9 @@ function PostProblem() {
   const [submitting, setSubmitting] = useState(false);
 
   const addFeature = () => {
-    
-    setFeatures((prev)=>{
-      return [...prev,""]
+
+    setFeatures((prev) => {
+      return [...prev, ""]
     })
   };
 
@@ -70,7 +70,7 @@ function PostProblem() {
           <div className="flex flex-col">
             <h1>*Title</h1>
             <input
-            required
+              required
               autoFocus
               type="text"
               className="base-input-design"
@@ -82,11 +82,15 @@ function PostProblem() {
           <div className="flex flex-col">
             <h1>*Problem</h1>
             <textarea
-            required
+              required
               className="base-input-design"
               placeholder="Please describe your problem specifically."
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                e.target.style.height = 'auto';
+                e.target.style.height = e.target.scrollHeight + 'px';
+              }}
             ></textarea>
           </div>
           <div className="flex flex-col">
