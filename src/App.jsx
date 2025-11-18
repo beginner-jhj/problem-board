@@ -122,6 +122,9 @@ function MyInfo() {
       </div>
       {user && <p className="muted text-sm">Email: {user.email} | Username: {user.displayName}</p>}
       <h3 className="text-lg font-medium">Problems ({myProblems.length})</h3>
+      {user && myProblems.length === 0 && (
+        <p className="muted text-sm">You have not posted any problems yet.</p>
+      )}
       {user &&
         myProblems.map((problem, index) => (
           <div key={index} className="flex flex-col">
@@ -134,8 +137,7 @@ function MyInfo() {
           </div>
         ))}
       <h3 className="text-lg font-medium">Problems I solved ({USER_PROFILE.acceptedSolutions?.length || 0})</h3>
-      {Object.keys(USER_PROFILE).length === 0 &&
-        (USER_PROFILE.acceptedSolutions?.length || 0) === 0 && (
+      {(USER_PROFILE.acceptedSolutions?.length || 0) === 0 && (
           <p className="muted text-sm">You have not had any solutions accepted yet.</p>
         )}
       {Object.keys(USER_PROFILE).length === 0 &&
