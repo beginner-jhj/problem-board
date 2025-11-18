@@ -214,19 +214,19 @@ function FilterNav({ setProblems, setError }) {
         <span className={`category-filter ${category === "all" ? "active" : ""}`} onClick={() => setCategory("all")}>
           All
         </span>
-        <span className={`category-filter ${category === "general" ? "active" : ""}`} onClick={() => setCategory("general")}>
+        <span className={`category-filter ${category === "General" ? "active" : ""}`} onClick={() => setCategory("General")}>
           General
         </span>
-        <span className={`category-filter ${category === "work" ? "active" : ""}`} onClick={() => setCategory("work")}>
+        <span className={`category-filter ${category === "Work" ? "active" : ""}`} onClick={() => setCategory("Work")}>
           Work
         </span>
-        <span className={`category-filter ${category === "health" ? "active" : ""}`} onClick={() => setCategory("health")}>
+        <span className={`category-filter ${category === "Health" ? "active" : ""}`} onClick={() => setCategory("Health")}>
           Health
         </span>
-        <span className={`category-filter ${category === "study" ? "active" : ""}`} onClick={() => setCategory("study")}>
+        <span className={`category-filter ${category === "Study" ? "active" : ""}`} onClick={() => setCategory("Study")}>
           Study
         </span>
-        <span className={`category-filter ${category === "finance" ? "active" : ""}`} onClick={() => setCategory("finance")}>
+        <span className={`category-filter ${category === "Finance" ? "active" : ""}`} onClick={() => setCategory("Finance")}>
           Finance
         </span>
         <span className={`category-filter ${status === "all" ? "active" : ""}`} onClick={() => setStatus("all")}>
