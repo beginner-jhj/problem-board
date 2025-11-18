@@ -128,11 +128,11 @@ function MyInfo() {
           </div>
         ))}
       <h3 className="text-lg font-medium">Problems I solved ({userProfile.acceptedSolutions?.length || 0})</h3>
-      {user &&
+      {user && userProfile &&
         (userProfile.acceptedSolutions?.length || 0) === 0 && (
           <p className="muted text-sm">You have not had any solutions accepted yet.</p>
         )}
-      {user &&
+      {user && userProfile &&
         userProfile.acceptedSolutions?.length > 0 && (
           <div className="flex flex-col gap-2">
             {userProfile.acceptedSolutions.map((problemTitle, index) => (
