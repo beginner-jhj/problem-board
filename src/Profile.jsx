@@ -126,12 +126,13 @@ export default function Profile() {
                             ))}
                         </div>
                     )}
-                    <h3 className="text-lg font-medium mt-4">Problems I solved ({userProfile?.acceptedSolutions?.length || 0})</h3>
+                    <h3 className="text-lg font-medium mt-4">My Accepted Solutions ({userProfile?.acceptedSolutions?.length || 0})</h3>
                     {(userProfile?.acceptedSolutions?.length || 0) === 0 && (
                         <p className="muted text-sm">You have not had any solutions accepted yet.</p>
                     )}
                     {userProfile?.acceptedSolutions?.length > 0 && (
                         <div className="flex flex-col gap-2 mb-6">
+                            <p className="muted text-sm">Problems I solved</p>
                             {userProfile.acceptedSolutions.map((problemTitle, index) => (
                                 <div key={index} className="border-l-2 border-green-500 pl-3 py-1">
                                     <p className="text-sm font-medium text-green-700">✓ Solution {index + 1}</p>

@@ -99,7 +99,6 @@ function MyInfo() {
       setUSER_PROFILE(userProfile);
     }
   }, [userProfile]);
-  const navigate = useNavigate();
   return (
     <div className="card p-4 flex flex-col gap-3">
       <h2 className="text-lg font-semibold">My Info</h2>
@@ -121,36 +120,8 @@ function MyInfo() {
         )}
       </div>
       {user && <p className="muted text-sm">Email: {user.email} | Username: {user.displayName}</p>}
-      <h3 className="text-lg font-medium">Problems ({myProblems.length})</h3>
-      {user && myProblems.length === 0 && (
-        <p className="muted text-sm">You have not posted any problems yet.</p>
-      )}
-      {user &&
-        myProblems.map((problem, index) => (
-          <div key={index} className="flex flex-col">
-            <Link to={`/problem/${problem.id}`}>
-              <h3 className="text-base">{problem.title.length > 20 ? problem.title.slice(0, 20) + '...' : problem.title}</h3>
-            </Link>
-            <p className="muted text-sm">
-              Views {problem.views} | Empathy {problem.empathy}{" "} | Watching {problem.watching}{" "}<span className="cursor-pointer" onClick={() => navigate(`/edit/${problem.id}`)}>✎</span>
-            </p>
-          </div>
-        ))}
-      <h3 className="text-lg font-medium">Problems I solved ({USER_PROFILE.acceptedSolutions?.length || 0})</h3>
-      {(USER_PROFILE.acceptedSolutions?.length || 0) === 0 && (
-          <p className="muted text-sm">You have not had any solutions accepted yet.</p>
-        )}
-      {Object.keys(USER_PROFILE).length === 0 &&
-        USER_PROFILE.acceptedSolutions?.length > 0 && (
-          <div className="flex flex-col gap-2">
-            {userProfile.acceptedSolutions.map((problemTitle, index) => (
-              <div key={index} className="border-l-2 border-green-500 pl-3 py-1">
-                <p className="text-sm font-medium text-green-700">✓ Solution {index + 1}</p>
-                <p className="text-sm text-gray-700">{problemTitle}</p>
-              </div>
-            ))}
-          </div>
-        )}
+      <h3 className="text-md font-medium">My Problems ({myProblems.length})</h3>
+      <h3 className="text-md font-medium">My Accepted Solutions ({USER_PROFILE.acceptedSolutions?.length || 0})</h3>
     </div>
   );
 }
@@ -181,7 +152,7 @@ function PostList() {
           <Loader />
         </div>
       ) : (
-        <div className="card w-full">
+        <div className="w-full">
           {problems.length === 0 ? (
             <div className="w-full h-full flex items-center justify-center">
               <p className="muted text-sm">No problems found</p>
@@ -285,7 +256,7 @@ function FilterNav({ setProblems, setError }) {
 
 function ProblemCard({ index, problem }) {
   return (
-    <Link to={`/problem/${problem?.id}`} className="card-row">
+    <Link to={`/problem/${problem?.id}`} className="card card-row mt-3">
       <div className="muted text-xs hidden sm:block">{index + 1}</div>
       <div className="flex flex-col gap-1 min-w-0">
         <h3 className="text-sm md:text-base font-medium leading-snug break-words min-w-0">
@@ -301,9 +272,6 @@ function ProblemCard({ index, problem }) {
           <span title="Watching">Watching {problem?.watching}</span>
           <span title="Created at">{timeCalc(problem?.createdAt).text}</span>
         </div>
-      </div>
-      <div className="flex items-center gap-2 text-xs md:text-sm flex-wrap justify-end">
-        {/* reserved for future actions/controls */}
       </div>
     </Link>
   );
