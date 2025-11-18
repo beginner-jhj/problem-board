@@ -133,7 +133,7 @@ function MyInfo() {
             </p>
           </div>
         ))}
-      <h3 className="text-lg font-medium">Problems I solved ({userProfile.acceptedSolutions?.length || 0})</h3>
+      <h3 className="text-lg font-medium">Problems I solved ({USER_PROFILE.acceptedSolutions?.length || 0})</h3>
       {Object.keys(USER_PROFILE).length === 0 &&
         (USER_PROFILE.acceptedSolutions?.length || 0) === 0 && (
           <p className="muted text-sm">You have not had any solutions accepted yet.</p>
