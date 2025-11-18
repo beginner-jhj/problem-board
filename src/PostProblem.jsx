@@ -96,7 +96,7 @@ function PostProblem() {
                 <input
                   type="radio"
                   name="category"
-                  value="general"
+                  value="General"
                   onChange={(e) => setCategory(e.target.value)}
                 />
                 <span>General</span>
@@ -105,7 +105,7 @@ function PostProblem() {
                 <input
                   type="radio"
                   name="category"
-                  value="work"
+                  value="Work"
                   onChange={(e) => setCategory(e.target.value)}
                 />
                 <span>Work</span>
@@ -114,7 +114,7 @@ function PostProblem() {
                 <input
                   type="radio"
                   name="category"
-                  value="health"
+                  value="Health"
                   onChange={(e) => setCategory(e.target.value)}
                 />
                 <span>Health</span>
@@ -123,7 +123,7 @@ function PostProblem() {
                 <input
                   type="radio"
                   name="category"
-                  value="study"
+                  value="Study"
                   onChange={(e) => setCategory(e.target.value)}
                 />
                 <span>Study</span>
@@ -132,7 +132,7 @@ function PostProblem() {
                 <input
                   type="radio"
                   name="category"
-                  value="finance"
+                  value="Finance"
                   onChange={(e) => setCategory(e.target.value)}
                 />
                 <span>Finance</span>
@@ -146,7 +146,7 @@ function PostProblem() {
                 <input
                   type="radio"
                   name="frequency"
-                  value="daily"
+                  value="Daily"
                   onChange={(e) => setFrequency(e.target.value)}
                 />
                 <span>Daily</span>
@@ -155,7 +155,7 @@ function PostProblem() {
                 <input
                   type="radio"
                   name="frequency"
-                  value="weekly"
+                  value="Weekly"
                   onChange={(e) => setFrequency(e.target.value)}
                 />
                 <span>Weekly</span>
@@ -164,7 +164,7 @@ function PostProblem() {
                 <input
                   type="radio"
                   name="frequency"
-                  value="monthly"
+                  value="Monthly"
                   onChange={(e) => setFrequency(e.target.value)}
                 />
                 <span>Monthly</span>
@@ -173,7 +173,7 @@ function PostProblem() {
                 <input
                   type="radio"
                   name="frequency"
-                  value="sometimes"
+                  value="Sometimes"
                   onChange={(e) => setFrequency(e.target.value)}
                 />
                 <span>Sometimes</span>
@@ -189,7 +189,7 @@ function PostProblem() {
             </div>
             <div className="flex flex-col gap-2">
               {features.map((feature, index) => (
-                <FeatureInput key={index} index={index + 1} setFeatures={setFeatures} features={features} />
+                <FeatureInput key={index} index={index + 1} setFeatures={setFeatures} features={feature} />
               ))}
             </div>
           </div>

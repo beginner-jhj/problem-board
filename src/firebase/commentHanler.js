@@ -13,6 +13,7 @@ import {
 import { db } from "./app";
 import { assert, appError } from "../utils/appError";
 import { addInappNotification, deleteInappNotification } from "./notificationHandler";
+import { addAcceptedSolution, removeAcceptedSolution } from "./userHandler";
 
 
 export const addComment = async (comment, problemOwner) => {
@@ -32,13 +33,18 @@ export const addComment = async (comment, problemOwner) => {
             dislikedBy: [],
             accepted: false,
         });
-        await addInappNotification({
+        // include problem title so notification can show a human-friendly name
+        const problemRef = doc(db, "problems", problemId);
+        const problemSnap = await getDoc(problemRef);
+        const problemTitle = problemSnap && problemSnap.exists() ? problemSnap.data().title : '';
+        addInappNotification({
             recipientId: problemOwner,
             type: 'comment',
             problemId,
+            problemTitle,
             actorId: userId,
             actorName: userName,
-        });
+        }).catch((err) => { console.error("Failed to add comment notification:", err) });
         return docRef;
     } catch (error) {
         throw error;
@@ -53,31 +59,40 @@ export const toggleAccept = async (commentId, problemOwnerId, problemOwnerName) 
         if (docSnap.exists()) {
             const comment = docSnap.data();
             const nextAccepted = !Boolean(comment.accepted);
-            await updateDoc(docRef, { accepted: nextAccepted });
-            // Update parent problem status accordingly
+            // fetch parent problem so we can include its title in notifications
             const problemRef = doc(db, "problems", comment.problemId);
             const problemSnap = await getDoc(problemRef);
-            if (problemSnap.exists()) {
+            await updateDoc(docRef, { accepted: nextAccepted });
+            // Update parent problem status accordingly
+            if (problemSnap && problemSnap.exists()) {
                 const problem = problemSnap.data();
                 const nextStatus = nextAccepted
-                  ? "Resolved"
-                  : (problem.watching || 0) > 3
-                  ? "Trending"
-                  : "Open";
+                    ? "Resolved"
+                    : (problem.watching || 0) > 3
+                        ? "Trending"
+                        : "Open";
                 await updateDoc(problemRef, { status: nextStatus });
-                return { accepted: nextAccepted, status: nextStatus };
-            }
+                if (nextAccepted) {
+                    const problemTitle = problem.title;
+                    addInappNotification({
+                        recipientId: comment.userId,
+                        type: 'accept',
+                        problemId: comment.problemId,
+                        problemTitle,
+                        actorId: problemOwnerId,
+                        actorName: problemOwnerName,
+                    }).catch((err) => { console.error("Failed to add accept notification:", err) });
 
-            if(nextAccepted){
-                await addInappNotification({
-                    recipientId: comment.userId,
-                    type: 'accept',
-                    problemId: comment.problemId,
-                    actorId: problemOwnerId,
-                    actorName: problemOwnerName,
-                })
-            }else{
-                await deleteInappNotification(problemOwnerId, 'accept', comment.problemId);
+                    addAcceptedSolution(comment.userId, problemTitle)
+                        .catch((err) => { console.error("Failed to add accepted solution to user profile:", err) });
+                } else {
+                    deleteInappNotification(problemOwnerId, 'accept', comment.problemId)
+                        .catch((err) => { console.error("Failed to delete accept notification:", err) });
+
+                    removeAcceptedSolution(comment.userId, problem.title)
+                        .catch((err) => { console.error("Failed to remove accepted solution from user profile:", err) });
+                }
+                return { accepted: nextAccepted, status: nextStatus };
             }
             return { accepted: nextAccepted };
         } else {

@@ -25,6 +25,7 @@ export const createUserProfile = async (userId, userData) => {
     await setDoc(userRef, {
       displayName: userData.displayName,
       email: userData.email,
+      acceptedSolutions: [],
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
@@ -86,6 +87,50 @@ export const updateUserProfile = async (userId, updates) => {
     throw error;
   }
 };
+
+export const addAcceptedSolution = async (userId, problemTitle)=>{
+  try{
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+    if(!userSnap.exists()){
+      throw appError('user/profile-not-found');
+    }
+    const userData = userSnap.data();
+    const acceptedSolutions = userData.acceptedSolutions || [];
+    if(!acceptedSolutions.includes(problemTitle)){
+      acceptedSolutions.push(problemTitle);
+      await updateDoc(userRef, {
+        acceptedSolutions,
+        updatedAt: serverTimestamp(),
+      });
+    }
+    return true;
+  }catch(error){
+    throw error;
+  }
+}
+
+export const removeAcceptedSolution = async (userId, problemTitle)=>{
+  try{
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+    if(!userSnap.exists()){
+      throw appError('user/profile-not-found');
+    }
+    const userData = userSnap.data();
+    let acceptedSolutions = userData.acceptedSolutions || [];
+    if(acceptedSolutions.includes(problemTitle)){
+      acceptedSolutions = acceptedSolutions.filter(title => title !== problemTitle);
+      await updateDoc(userRef, {
+        acceptedSolutions,
+        updatedAt: serverTimestamp(),
+      });
+    }
+    return true;
+  }catch(error){
+    throw error;
+  }
+}
 
 export const deleteUserProfile = async (userId) => {
   try {

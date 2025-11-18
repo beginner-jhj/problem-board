@@ -54,20 +54,21 @@ export const toggleWatching = async (problemId, userId, userName) => {
       const nextCount = Math.max(0, (data.watching || 0) - 1);
       const nextStatus = data.status === "Resolved" ? "Resolved" : (nextCount > 3 ? "Trending" : "Open");
       await updateDoc(docRef, { watchingBy: nextArr, watching: nextCount, status: nextStatus });
-      await deleteInappNotification(userId, 'watch', problemId);
+      deleteInappNotification(userId, 'watch', problemId).catch((err) => {console.error("Failed to delete watch notification:", err)});
       return { watching: nextCount, watchingBy: nextArr, watched: false, status: nextStatus };
     } else {
       const nextArr = [...(data.watchingBy || []), userId];
       const nextCount = (data.watching || 0) + 1;
       const nextStatus = data.status === "Resolved" ? "Resolved" : (nextCount > 3 ? "Trending" : "Open");
       await updateDoc(docRef, { watchingBy: nextArr, watching: nextCount, status: nextStatus });
-      await addInappNotification({
+      addInappNotification({
         recipientId: data.userId,
         type: 'watch',
         problemId: problemId,
+        problemTitle: data.title || '',
         actorId: userId,
         actorName: userName,
-      });
+      }).catch((err) => {console.error("Failed to add watch notification:", err)});
       return { watching: nextCount, watchingBy: nextArr, watched: true, status: nextStatus };
     }
   } catch (error) {
@@ -93,7 +94,7 @@ export const toggleEmpathy = async (problemId, userId, userName) => {
           empathy: nextCount,
           empathizedBy: nextArr,
         });
-        await deleteInappNotification(userId, 'empathy', problemId);  
+        deleteInappNotification(userId, 'empathy', problemId).catch((err) => {console.error("Failed to delete empathy notification:", err)});
         return { empathy: nextCount, empathizedBy: nextArr, empathized: false };
       } else {
         const nextArr = [...(problem.empathizedBy || []), userId];
@@ -102,13 +103,14 @@ export const toggleEmpathy = async (problemId, userId, userName) => {
           empathy: nextCount,
           empathizedBy: nextArr,
         });
-        await addInappNotification({
+        addInappNotification({
           recipientId: problem.userId,
           type: 'empathy',
           problemId: problemId,
+          problemTitle: problem.title || '',
           actorId: userId,
           actorName: userName,
-        });
+        }).catch((err) => {console.error("Failed to add empathy notification:", err)});
         return { empathy: nextCount, empathizedBy: nextArr, empathized: true };
       }
     } else {
@@ -133,10 +135,11 @@ export const increaseView = async (problemId, userId) => {
         return null;
       }
       const newViews = views + 1;
-      await updateDoc(docRef, {
+      updateDoc(docRef, {
         views: newViews,
         viewsBy: [...viewsBy, userId],
-      });
+      }).catch((err) => {console.error("Failed to update views:", err)});
+      return newViews;
     } else {
       throw appError('problem/not-found');
     }

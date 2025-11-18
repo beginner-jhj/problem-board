@@ -11,10 +11,23 @@ import ErrorAlert from "./ErrorAlert";
 import { timeCalc } from "./utils/timeAgo";
 import { Helmet } from 'react-helmet-async';
 import { getErrorMessage } from "./utils/errorMessages";
+import { getUnreadNotificationsCount } from "./firebase/notificationHandler";
 
 function App() {
+  const { user } = useAuth();
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+  const [error, setError] = useState("");
+  useEffect(()=>{
+    if(!user)return;
+    getUnreadNotificationsCount(user.uid).then((count)=>{
+      setUnreadNotificationCount(count);
+    }).catch((err)=>{
+      setError(getErrorMessage(err));
+    });
+  },[])
   return (
     <>
+      <ErrorAlert isOpen={error.length > 0} message={error} />
       <Helmet>
         <title>Problem Board - Find Real Problems to Solve</title>
         <meta name="description" content="Discover everyday problems that need solutions. Get inspiration for your next project by exploring real-world challenges." />
@@ -35,8 +48,13 @@ function App() {
           <div className="container w-full flex items-center justify-between gap-2">
             <NavToHome />
             <div className="flex items-center gap-2">
-              <Link to="/profile" className="btn md:hidden">
+              <Link to={unreadNotificationCount > 0 ? '/profile/true':'/profile/false'} className="btn md:hidden">
                 Profile
+                {unreadNotificationCount > 0 && (
+                  <span className="text-sm text-green-600 font-semibold ml-1">
+                    🔔{unreadNotificationCount}
+                  </span>
+                )}
               </Link>
               <Link to="/post" className="btn btn-primary">
                 Post
@@ -66,7 +84,7 @@ export function NavToHome() {
 }
 
 function MyInfo() {
-  const { user, logout } = useAuth();
+  const { user, logout, userProfile } = useAuth();
   const [myProblems, setMyProblems] = useState([]);
   useEffect(() => {
     if (user) {
@@ -109,6 +127,22 @@ function MyInfo() {
             </p>
           </div>
         ))}
+      <h3 className="text-lg font-medium">Problems I solved ({userProfile.acceptedSolutions?.length || 0})</h3>
+      {user &&
+        (userProfile.acceptedSolutions?.length || 0) === 0 && (
+          <p className="muted text-sm">You have not had any solutions accepted yet.</p>
+        )}
+      {user &&
+        userProfile.acceptedSolutions?.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {userProfile.acceptedSolutions.map((problemTitle, index) => (
+              <div key={index} className="border-l-2 border-green-500 pl-3 py-1">
+                <p className="text-sm font-medium text-green-700">✓ Solution {index + 1}</p>
+                <p className="text-sm text-gray-700">{problemTitle}</p>
+              </div>
+            ))}
+          </div>
+        )}
     </div>
   );
 }
@@ -251,7 +285,7 @@ function ProblemCard({ index, problem }) {
         </h3>
         <div className="flex items-center gap-2 flex-wrap">
           <span className="tag">{problem?.category}</span>
-          {problem?.status && <span className="tag">{problem.status}</span>}
+          {problem?.status && <span className="tag">{problem?.status}</span>}
         </div>
         <div className="flex items-center gap-3 text-xs md:text-sm flex-wrap muted">
           <span title="Views">Viewed {problem?.views}</span>
@@ -273,6 +307,7 @@ export function Footer() {
       <div className="container flex flex-wrap items-center justify-between gap-3 text-sm">
         <div className="muted">© {new Date().getFullYear()} Problem Board</div>
         <nav className="flex flex-wrap items-center gap-3">
+          <Link className="muted" to="/about">About</Link>
           <Link className="muted" to="/post">Post a Problem</Link>
           <Link className="muted" to="/login">Login / Sign Up</Link>
         </nav>

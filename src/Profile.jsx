@@ -1,21 +1,34 @@
 import { useAuth } from "./context/AuthContext";
 import { useState, useEffect } from "react";
 import { getDocsByUserId } from "./firebase/problemHandler";
-import { useNavigate, Link } from "react-router";
+import { useNavigate, Link, useParams } from "react-router";
 import { NavToHome, Footer } from "./App";
 import ErrorAlert from "./ErrorAlert";
 import { deleteAccountWithReauth } from "./firebase/auth";
 import { getErrorMessage } from "./utils/errorMessages";
 import { Helmet } from 'react-helmet-async';
+import { getUnreadNotificationContents, markNotificationsAsRead } from "./firebase/notificationHandler";
 
 export default function Profile() {
-    const { user, logout } = useAuth();
+    const { user, logout, userProfile } = useAuth();
+    const { notification } = useParams();
     const [myProblems, setMyProblems] = useState([]);
     const [error, setError] = useState("");
     const [password, setPassword] = useState("");
     const [deleteAccount, setDeleteAccount] = useState(false);
     const [deletingAccount, setDeletingAccount] = useState(false);
+    const [unreadNotifications, setUnreadNotifications] = useState([]);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (notification === "true") {
+            getUnreadNotificationContents(user.uid)
+                .then((contents) => {
+                    setUnreadNotifications(contents);
+                })
+                .catch(err => setError(getErrorMessage(err)))
+        }
+    }, []);
 
     useEffect(() => {
         if (user) {
@@ -75,6 +88,22 @@ export default function Profile() {
                             <p className="text-sm muted">Username: {user.displayName}</p>
                         </div>
                     )}
+                    <h3 className="text-lg font-medium mt-4">Notifications ({unreadNotifications.length})</h3>
+                    {unreadNotifications.length === 0 ?
+                        (<p className="muted text-sm">There is no notifications yet.</p>) :
+                        (
+                            <div className="flex flex-col gap-3">
+                                {unreadNotifications.map((notification, index) => (
+                                    <Link to={`/problem/${notification.problemId}`} key={index} className="flex flex-col gap-1"
+                                        onClick={
+                                            () => { markNotificationsAsRead(notification.id).catch(err => console.error("Failed to mark as read:", err)) }
+                                        }>
+                                        <p>🔔 {notification.message}</p>
+                                        <p className="muted text-sm">{notification.problemTitle}</p>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
                     <h3 className="text-lg font-medium mt-4">My Problems ({myProblems.length})</h3>
                     {myProblems.length === 0 ? (
                         <p className="muted text-sm">You haven't posted any problems yet.</p>
@@ -93,6 +122,20 @@ export default function Profile() {
                                     <Link to={`/edit/${problem.id}`} className="text-xs text-blue-600 hover:underline">
                                         Edit ✎
                                     </Link>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    <h3 className="text-lg font-medium mt-4">Problems I solved ({userProfile?.acceptedSolutions?.length || 0})</h3>
+                    {(userProfile?.acceptedSolutions?.length || 0) === 0 && (
+                        <p className="muted text-sm">You have not had any solutions accepted yet.</p>
+                    )}
+                    {userProfile?.acceptedSolutions?.length > 0 && (
+                        <div className="flex flex-col gap-2 mb-6">
+                            {userProfile.acceptedSolutions.map((problemTitle, index) => (
+                                <div key={index} className="border-l-2 border-green-500 pl-3 py-1">
+                                    <p className="text-sm font-medium text-green-700">✓ Solution {index + 1}</p>
+                                    <p className="text-sm text-gray-700">{problemTitle}</p>
                                 </div>
                             ))}
                         </div>

@@ -7,13 +7,15 @@ const AuthContext = createContext();
 export default function AuthProvider({children}){
     const [user,setUser] = useState(null);
     const [loading,setLoading] = useState(true);
+    const [userProfile, setUserProfile] = useState(null);
 
     useEffect(()=>{
         const unsubscribe = onAuthStateChange(async (user)=>{
             if (user) {
                 // Check if user profile exists in Firestore, create if not
                 try {
-                    await getUserProfile(user.uid);
+                    const userProfileData =  await getUserProfile(user.uid);
+                    setUserProfile(userProfileData);
                 } catch (error) {
                     // Profile doesn't exist, create it
                     if (error.code === "user/profile-not-found") {
@@ -37,6 +39,7 @@ export default function AuthProvider({children}){
 
     const value = {
         user,
+        userProfile,
         signup,
         signin,
         logout

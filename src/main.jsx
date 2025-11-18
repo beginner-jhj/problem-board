@@ -11,6 +11,7 @@ import Protector from './Protector'
 import ProblemDetail from './ProblemDetail.jsx'
 import EditProblem from './EditProblem.jsx'
 import Profile from './Profile.jsx'
+import About from './About.jsx'
 
 createRoot(document.getElementById('root')).render(
   <HelmetProvider>
@@ -18,7 +19,8 @@ createRoot(document.getElementById('root')).render(
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />} />
-          <Route path='/profile' element={<Profile />} />
+          <Route path='/profile/:notification' element={<Profile />} />
+          <Route path='/about' element={<About />} />
           <Route path='/post' element={<Protector><PostProblem /></Protector>} />
           <Route path='/signup' element={<SignUp />} />
           <Route path='/login' element={<Login />} />
