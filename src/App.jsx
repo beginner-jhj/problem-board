@@ -86,6 +86,7 @@ export function NavToHome() {
 function MyInfo() {
   const { user, logout, userProfile } = useAuth();
   const [myProblems, setMyProblems] = useState([]);
+  const [USER_PROFILE, setUSER_PROFILE] = useState({});
   useEffect(() => {
     if (user) {
       getDocsByUserId(user.uid).then((problems) => {
@@ -93,6 +94,11 @@ function MyInfo() {
       });
     }
   }, [user]);
+  useEffect(() => {
+    if (userProfile) {
+      setUSER_PROFILE(userProfile);
+    }
+  }, [userProfile]);
   const navigate = useNavigate();
   return (
     <div className="card p-4 flex flex-col gap-3">
@@ -128,12 +134,12 @@ function MyInfo() {
           </div>
         ))}
       <h3 className="text-lg font-medium">Problems I solved ({userProfile.acceptedSolutions?.length || 0})</h3>
-      {user && userProfile &&
-        (userProfile.acceptedSolutions?.length || 0) === 0 && (
+      {Object.keys(USER_PROFILE).length === 0 &&
+        (USER_PROFILE.acceptedSolutions?.length || 0) === 0 && (
           <p className="muted text-sm">You have not had any solutions accepted yet.</p>
         )}
-      {user && userProfile &&
-        userProfile.acceptedSolutions?.length > 0 && (
+      {Object.keys(USER_PROFILE).length === 0 &&
+        USER_PROFILE.acceptedSolutions?.length > 0 && (
           <div className="flex flex-col gap-2">
             {userProfile.acceptedSolutions.map((problemTitle, index) => (
               <div key={index} className="border-l-2 border-green-500 pl-3 py-1">
