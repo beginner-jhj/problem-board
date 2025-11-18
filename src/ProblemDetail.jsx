@@ -26,6 +26,8 @@ export default function ProblemDetail() {
   const [empathized, setEmpathized] = useState(false);
   const [viewed, setViewed] = useState(false);
   const [watched, setWatched] = useState(false);
+  const [watchingLoading, setWatchingLoading] = useState(false);
+  const [empathizeLoading, setEmpathizeLoading] = useState(false);
 
   useEffect(() => {
     const getProblem = async () => {
@@ -130,46 +132,56 @@ export default function ProblemDetail() {
               <div className="flex items-center gap-2 w-full md:w-auto flex-col md:flex-row">
                 <button
                   className="btn w-full md:w-auto"
-                  onClick={() => {
-                    if (user) {
-                      toggleWatching(id, user.uid)
-                        .then((res) => {
-                          if (!res) return;
-                          setWatched(res.watched);
-                          setProblem((prev) => ({
-                            ...prev,
-                            watching: res.watching,
-                            status: res.status ?? prev.status,
-                          }));
-                        })
-                        .catch((err) => setError(getErrorMessage(err)));
-                    } else {
+                  onClick={async () => {
+                    if (!user) {
                       navigate("/login");
+                      return;
+                    }
+                    try {
+                      setWatchingLoading(true);
+                      const res = await toggleWatching(id, user.uid, user.displayName);
+                      if (!res) return;
+                      setWatched(res.watched);
+                      setProblem((prev) => ({
+                        ...prev,
+                        watching: res.watching,
+                        status: res.status ?? prev.status,
+                      }));
+                    } catch (err) {
+                      setError(getErrorMessage(err));
+                    } finally {
+                      setWatchingLoading(false);
                     }
                   }}
+                  disabled={watchingLoading}
                 >
-                  {watched ? "Unwatch" : "Watch"}
+                  {watchingLoading ? (watched ? "Unwatching..." : "Watching...") : (watched ? "Unwatch" : "Watch")}
                 </button>
                 <button
-                  onClick={() => {
-                    if (user) {
-                      toggleEmpathy(id, user.uid)
-                        .then((res) => {
-                          if (!res) return;
-                          setEmpathized(res.empathized);
-                          setProblem((prev) => ({
-                            ...prev,
-                            empathy: res.empathy,
-                          }));
-                        })
-                        .catch((error) => setError(getErrorMessage(error)));
-                    } else {
+                  onClick={async () => {
+                    if (!user) {
                       navigate("/login");
+                      return;
+                    }
+                    try {
+                      setEmpathizeLoading(true);
+                      const res = await toggleEmpathy(id, user.uid, user.displayName);
+                      if (!res) return;
+                      setEmpathized(res.empathized);
+                      setProblem((prev) => ({
+                        ...prev,
+                        empathy: res.empathy,
+                      }));
+                    } catch (error) {
+                      setError(getErrorMessage(error));
+                    } finally {
+                      setEmpathizeLoading(false);
                     }
                   }}
                   className={`btn w-full md:w-auto ${empathized ? "" : "btn-primary"}`}
+                  disabled={empathizeLoading}
                 >
-                  {empathized ? "Unempathize" : "Empathize"}
+                  {empathizeLoading ? (empathized ? "Removing..." : "Empathizing...") : (empathized ? "Unempathize" : "Empathize")}
                 </button>
               </div>
             </div>
@@ -180,6 +192,7 @@ export default function ProblemDetail() {
         problemId={id}
         setError={setError}
         ownerId={problem?.userId}
+        ownerName={problem?.userName}
         onStatusChange={(status) =>
           setProblem((prev) => ({ ...prev, status: status ?? prev?.status }))
         }
@@ -189,7 +202,7 @@ export default function ProblemDetail() {
   );
 }
 
-function CommentSection({ problemId, setError, ownerId, onStatusChange }) {
+function CommentSection({ problemId,setError, ownerId, ownerName,onStatusChange }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -228,13 +241,13 @@ function CommentSection({ problemId, setError, ownerId, onStatusChange }) {
     return (
       <div key={key} className={depth > 0 ? "pl-6 border-l" : ""}>
         <CommentCard
-          type={depth === 0 ? "parent" : "child"}
           setComments={setComments}
           comment={node}
           problemId={problemId}
           setLoading={setLoading}
           setError={setError}
           ownerId={ownerId}
+          ownerName={ownerName}
           onStatusChange={onStatusChange}
         />
         {children.map((child) => renderThread(child, depth + 1))}
@@ -273,7 +286,7 @@ function CommentSection({ problemId, setError, ownerId, onStatusChange }) {
   );
 }
 
-function CommentCard({ setComments, comment, problemId, setLoading,setError, type, ownerId, onStatusChange }) {
+function CommentCard({ setComments, comment, problemId, setLoading,setError, ownerId,ownerName, onStatusChange }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [text, setText] = useState("");
@@ -284,6 +297,13 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
   const [editText, setEditText] = useState(comment?.content || "");
   const [replying, setReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
+  const [posting, setPosting] = useState(false);
+  const [likeLoading, setLikeLoading] = useState(false);
+  const [dislikeLoading, setDislikeLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [accepting, setAccepting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [replyPosting, setReplyPosting] = useState(false);
 
 
   const postComment = async () => {
@@ -293,16 +313,23 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
         return;
       }
       if (text.trim().length !== 0) {
-        await addComment({
+        try {
+          setPosting(true);
+          await addComment({
           content: text,
           userId: user.uid,
           userName: user.displayName,
           problemId: problemId,
           status: "posted"
-        });
-        setComments((prev) => prev.filter((x) => comment.commentId !== x.commentId));
-        setLoading(true);
-        return;
+        }, ownerId);
+          setComments((prev) => prev.filter((x) => comment.commentId !== x.commentId));
+          setLoading(true);
+          setPosting(false);
+          return;
+        } catch (err) {
+          setPosting(false);
+          throw err;
+        }
       }
     } catch (error) {
       setError(getErrorMessage(error));
@@ -340,9 +367,9 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
           onChange={(e) => setText(e.target.value)}
         ></textarea>
         <div className="flex items-center gap-2 w-full flex-col md:flex-row md:w-auto">
-          <button className="btn btn-primary w-full md:w-auto" onClick={postComment}>
-            Post
-          </button>
+            <button className="btn btn-primary w-full md:w-auto" onClick={postComment} disabled={posting}>
+              {posting ? 'Posting...' : 'Post'}
+            </button>
           <button
             className="btn w-full md:w-auto"
             onClick={() => {
@@ -366,33 +393,33 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <div className="flex items-center gap-1">
-              <span className="cursor-pointer text-xs" onClick={()=>{
-                if(disliked){
-                  return;
-                }
-                toggleLike(thisComment.id, user.uid)
-                  .then((res) => {
-                    if (!res) return;
-                    setLiked(res.liked);
-                    setThisComment(prev=>({...prev,...res}))
-                  })
-                  .catch((error) => setError(getErrorMessage(error)));
-              }}>{liked ? "▲" : "△"}</span>
+              <span className="cursor-pointer text-xs" onClick={async ()=>{
+                if(disliked || likeLoading) return;
+                try{
+                  setLikeLoading(true);
+                  const res = await toggleLike(thisComment.id, user.uid);
+                  if(!res) return;
+                  setLiked(res.liked);
+                  setThisComment(prev=>({...prev,...res}));
+                } catch(err){
+                  setError(getErrorMessage(err));
+                } finally { setLikeLoading(false); }
+              }}>{likeLoading ? '...' : (liked ? "▲" : "△")}</span>
               <span className="text-xs muted">{thisComment?.likes}</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="cursor-pointer text-xs" onClick={()=>{
-                if(liked){
-                  return;
-                }
-                toggleDislike(thisComment.id, user.uid)
-                  .then((res) => {
-                    if (!res) return;
-                    setDisliked(res.disliked);
-                    setThisComment(prev=>({...prev,...res}))
-                  })
-                  .catch((error) => setError(getErrorMessage(error)));
-              }}>{disliked ? "▼" : "▽"}</span>
+              <span className="cursor-pointer text-xs" onClick={async ()=>{
+                if(liked || dislikeLoading) return;
+                try{
+                  setDislikeLoading(true);
+                  const res = await toggleDislike(thisComment.id, user.uid);
+                  if(!res) return;
+                  setDisliked(res.disliked);
+                  setThisComment(prev=>({...prev,...res}));
+                } catch(err){
+                  setError(getErrorMessage(err));
+                } finally { setDislikeLoading(false); }
+              }}>{dislikeLoading ? '...' : (disliked ? "▼" : "▽")}</span>
               <span className="text-xs muted">{thisComment?.dislikes}</span>
             </div>
             <span
@@ -413,7 +440,7 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
             </span>
             <span
               className="muted cursor-pointer text-xs"
-              onClick={() => {
+              onClick={async () => {
                 if (!user) {
                   navigate("/login");
                   return;
@@ -423,16 +450,18 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
                 }
                 const ok = window.confirm("Are you sure you want to delete this comment?");
                 if (!ok) return;
-                deleteComment(thisComment.id)
-                  .then((res) => {
-                    if (!res) return;
-                    setComments((prev) => prev.filter((x) => x.id !== thisComment.id));
-                    setLoading(true);
-                  })
-                  .catch((error) => setError(getErrorMessage(error)));
+                try{
+                  setDeleting(true);
+                  const res = await deleteComment(thisComment.id);
+                  if (!res) return;
+                  setComments((prev) => prev.filter((x) => x.id !== thisComment.id));
+                  setLoading(true);
+                } catch(err){
+                  setError(getErrorMessage(err));
+                } finally { setDeleting(false); }
               }}
             >
-              Delete
+              {deleting ? 'Deleting...' : 'Delete'}
             </span>
             <span
               className="muted cursor-pointer text-xs"
@@ -449,7 +478,7 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
             </span>
             <span
               className={`cursor-pointer text-xs ${thisComment?.accepted ? 'text-green-600' : 'muted'}`}
-              onClick={() => {
+              onClick={async () => {
                 if (!user) {
                   navigate('/login');
                   return;
@@ -458,18 +487,20 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
                 if (ownerId && user?.uid !== ownerId) {
                   return;
                 }
-                toggleAccept(thisComment.id)
-                  .then((res) => {
-                    if (!res) return;
-                    setThisComment((prev) => ({ ...prev, accepted: res.accepted }));
-                    if (res.status && typeof onStatusChange === 'function') {
-                      onStatusChange(res.status);
-                    }
-                  })
-                  .catch((error) => setError(getErrorMessage(error)));
+                try{
+                  setAccepting(true);
+                  const res = await toggleAccept(thisComment.id, ownerId, ownerName);
+                  if (!res) return;
+                  setThisComment((prev) => ({ ...prev, accepted: res.accepted }));
+                  if (res.status && typeof onStatusChange === 'function') {
+                    onStatusChange(res.status);
+                  }
+                } catch(err){
+                  setError(getErrorMessage(err));
+                } finally { setAccepting(false); }
               }}
             >
-              {thisComment?.accepted ? "Accepted" : "Accept"}
+              {accepting ? 'Processing...' : (thisComment?.accepted ? "Accepted" : "Accept")}
             </span>
           </div>
         </div>
@@ -483,7 +514,7 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
             <div className="flex items-center gap-2 w-full flex-col md:flex-row md:w-auto">
               <button
                 className="btn w-full md:w-auto"
-                onClick={() => {
+                onClick={async () => {
                   if (!user) {
                     navigate("/login");
                     return;
@@ -493,16 +524,19 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
                   }
                   const toSave = editText.trim();
                   if (toSave.length === 0) return;
-                  updateComment(thisComment.id, toSave)
-                    .then((res) => {
-                      if (!res) return;
-                      setThisComment((prev) => ({ ...prev, content: toSave }));
-                      setEditing(false);
-                    })
-                    .catch((error) => setError(getErrorMessage(error)));
+                  try{
+                    setSaving(true);
+                    const res = await updateComment(thisComment.id, toSave);
+                    if (!res) return;
+                    setThisComment((prev) => ({ ...prev, content: toSave }));
+                    setEditing(false);
+                  } catch(err){
+                    setError(getErrorMessage(err));
+                  } finally { setSaving(false); }
                 }}
+                disabled={saving}
               >
-                Save
+                {saving ? 'Saving...' : 'Save'}
               </button>
               <button
                 className="btn w-full md:w-auto"
@@ -537,23 +571,27 @@ function CommentCard({ setComments, comment, problemId, setLoading,setError, typ
                     }
                     const toPost = replyText.trim();
                     if (toPost.length === 0) return;
-                    await addComment({
-                      content: toPost,
-                      userId: user.uid,
-                      userName: user.displayName,
-                      problemId: problemId,
-                      status: "posted",
-                      parentId: thisComment.id,
-                    });
-                    setReplyText("");
-                    setReplying(false);
-                    setLoading(true);
+                    try{
+                      setReplyPosting(true);
+                      await addComment({
+                        content: toPost,
+                        userId: user.uid,
+                        userName: user.displayName,
+                        problemId: problemId,
+                        status: "posted",
+                        parentId: thisComment.id,
+                      });
+                      setReplyText("");
+                      setReplying(false);
+                      setLoading(true);
+                    } finally { setReplyPosting(false); }
                   } catch (error) {
                     setError(getErrorMessage(error));
                   }
                 }}
+                disabled={replyPosting}
               >
-                Reply
+                {replyPosting ? 'Posting...' : 'Reply'}
               </button>
               <button
                 className="btn w-full md:w-auto"

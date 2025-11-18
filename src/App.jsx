@@ -249,18 +249,19 @@ function ProblemCard({ index, problem }) {
         <h3 className="text-sm md:text-base font-medium leading-snug break-words min-w-0">
           {problem?.title}
         </h3>
-        {problem?.status && (
-          <div className="flex items-center gap-1">
-            <span className="tag">{problem.status}</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="tag">{problem?.category}</span>
+          {problem?.status && <span className="tag">{problem.status}</span>}
+        </div>
+        <div className="flex items-center gap-3 text-xs md:text-sm flex-wrap muted">
+          <span title="Views">Viewed {problem?.views}</span>
+          <span title="Empathy">Empathy {problem?.empathy}</span>
+          <span title="Watching">Watching {problem?.watching}</span>
+          <span title="Created at">{timeCalc(problem?.createdAt).text}</span>
+        </div>
       </div>
       <div className="flex items-center gap-2 text-xs md:text-sm flex-wrap justify-end">
-        <span className="tag">{problem?.category}</span>
-        <span title="Views" className="muted">Viewed {problem?.views}</span>
-        <span title="Empathy" className="hidden md:inline muted">Empathy {problem?.empathy}</span>
-        <span title="Watching" className="hidden md:inline muted">Watching {problem?.watching}</span>
-        <span title="Created at" className="muted">{timeCalc(problem?.createdAt).text}</span>
+        {/* reserved for future actions/controls */}
       </div>
     </Link>
   );
@@ -268,7 +269,7 @@ function ProblemCard({ index, problem }) {
 
 export function Footer() {
   return (
-    <footer className="border-t w-full py-3 mt-10 md:absolute md:bottom-0">
+    <footer className="border-t w-full py-3 mt-10 md:mt-20">
       <div className="container flex flex-wrap items-center justify-between gap-3 text-sm">
         <div className="muted">© {new Date().getFullYear()} Problem Board</div>
         <nav className="flex flex-wrap items-center gap-3">

@@ -21,6 +21,7 @@ export default function EditProblem() {
   const [loading, setLoading] = useState(true);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -50,10 +51,13 @@ export default function EditProblem() {
       return;
     }
     try {
+      setSubmitting(true);
       await updateProblem(id, { title, description, category, frequency, features });
       navigate(`/problem/${id}`);
     } catch (err) {
       setError(getErrorMessage(err));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -77,7 +81,7 @@ export default function EditProblem() {
           <form className="card p-5 flex flex-col gap-4" onSubmit={handleSubmit}>
             <div className="flex items-center justify-between">
               <h1 className="text-xl font-semibold">Edit Problem</h1>
-              <button type="submit" className="btn btn-primary">Save changes</button>
+              <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Saving...' : 'Save changes'}</button>
             </div>
 
             <section className="flex flex-col gap-2">
@@ -170,7 +174,7 @@ export default function EditProblem() {
 
             <div className="flex items-center justify-end gap-2">
               <Link to={`/problem/${id}`} className="btn">Cancel</Link>
-              <button type="submit" className="btn btn-primary">Save changes</button>
+              <button type="submit" className="btn btn-primary" disabled={submitting}>{submitting ? 'Saving...' : 'Save changes'}</button>
               <button type="button" className="btn btn-warn" onClick={()=>setOpenDeleteModal(true)}>Delete</button>
             </div>
           </form>

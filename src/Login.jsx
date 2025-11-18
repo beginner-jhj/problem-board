@@ -12,17 +12,21 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (email.length > 0 && password.length >= 6) {
+        setSubmitting(true);
         await signin(email, password);
         navigate("/");
       }
     } catch (error) {
       console.log(error);
       setError(getErrorMessage(error));
+    } finally {
+      setSubmitting(false);
     }
   };
   return (
@@ -60,8 +64,9 @@ export default function Login() {
           <button
             type="submit"
             className="p-2 bg-blue-500 text-white rounded-md w-full mt-4"
+            disabled={submitting}
           >
-            Login
+            {submitting ? 'Logging in...' : 'Login'}
           </button>
         </form>
       </main>

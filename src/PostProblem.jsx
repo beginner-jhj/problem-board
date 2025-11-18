@@ -18,6 +18,7 @@ function PostProblem() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const addFeature = () => {
     
@@ -33,6 +34,7 @@ function PostProblem() {
         setError(getErrorMessage('validation/missing-fields'));
         return;
       }
+      setSubmitting(true);
       const docRef = await addProblem(
         {
           title,
@@ -48,6 +50,8 @@ function PostProblem() {
     } catch (error) {
       console.error("Error adding problem:", error);
       setError(getErrorMessage(error));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -197,8 +201,9 @@ function PostProblem() {
           <button
             className="p-2 bg-blue-500 text-white rounded-md w-full md:w-auto mt-4"
             onClick={handleSubmit}
+            disabled={submitting}
           >
-            Post
+            {submitting ? 'Posting...' : 'Post'}
           </button>
         </form>
       </main>

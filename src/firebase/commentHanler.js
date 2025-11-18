@@ -12,9 +12,10 @@ import {
 } from "firebase/firestore";
 import { db } from "./app";
 import { assert, appError } from "../utils/appError";
+import { addInappNotification, deleteInappNotification } from "./notificationHandler";
 
 
-export const addComment = async (comment) => {
+export const addComment = async (comment, problemOwner) => {
     try {
         assert(comment && typeof comment === 'object', 'comment/invalid-args');
         const { content, userId, userName, problemId } = comment || {};
@@ -31,13 +32,20 @@ export const addComment = async (comment) => {
             dislikedBy: [],
             accepted: false,
         });
+        await addInappNotification({
+            recipientId: problemOwner,
+            type: 'comment',
+            problemId,
+            actorId: userId,
+            actorName: userName,
+        });
         return docRef;
     } catch (error) {
         throw error;
     }
 }
 
-export const toggleAccept = async (commentId) => {
+export const toggleAccept = async (commentId, problemOwnerId, problemOwnerName) => {
     try {
         assert(commentId, 'comment/invalid-id');
         const docRef = doc(db, "comments", commentId);
@@ -58,6 +66,18 @@ export const toggleAccept = async (commentId) => {
                   : "Open";
                 await updateDoc(problemRef, { status: nextStatus });
                 return { accepted: nextAccepted, status: nextStatus };
+            }
+
+            if(nextAccepted){
+                await addInappNotification({
+                    recipientId: comment.userId,
+                    type: 'accept',
+                    problemId: comment.problemId,
+                    actorId: problemOwnerId,
+                    actorName: problemOwnerName,
+                })
+            }else{
+                await deleteInappNotification(problemOwnerId, 'accept', comment.problemId);
             }
             return { accepted: nextAccepted };
         } else {

@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { db } from "./app";
 import { assert, appError } from "../utils/appError";
+import { addInappNotification, deleteInappNotification } from "./notificationHandler";
 
 export const addProblem = async (problem, userId, userName) => {
   try {
@@ -39,7 +40,7 @@ export const addProblem = async (problem, userId, userName) => {
   }
 };
 
-export const toggleWatching = async (problemId, userId) => {
+export const toggleWatching = async (problemId, userId, userName) => {
   try {
     assert(problemId, 'problem/invalid-id');
     assert(userId, 'auth/unauthenticated');
@@ -53,12 +54,20 @@ export const toggleWatching = async (problemId, userId) => {
       const nextCount = Math.max(0, (data.watching || 0) - 1);
       const nextStatus = data.status === "Resolved" ? "Resolved" : (nextCount > 3 ? "Trending" : "Open");
       await updateDoc(docRef, { watchingBy: nextArr, watching: nextCount, status: nextStatus });
+      await deleteInappNotification(userId, 'watch', problemId);
       return { watching: nextCount, watchingBy: nextArr, watched: false, status: nextStatus };
     } else {
       const nextArr = [...(data.watchingBy || []), userId];
       const nextCount = (data.watching || 0) + 1;
       const nextStatus = data.status === "Resolved" ? "Resolved" : (nextCount > 3 ? "Trending" : "Open");
       await updateDoc(docRef, { watchingBy: nextArr, watching: nextCount, status: nextStatus });
+      await addInappNotification({
+        recipientId: data.userId,
+        type: 'watch',
+        problemId: problemId,
+        actorId: userId,
+        actorName: userName,
+      });
       return { watching: nextCount, watchingBy: nextArr, watched: true, status: nextStatus };
     }
   } catch (error) {
@@ -66,7 +75,7 @@ export const toggleWatching = async (problemId, userId) => {
   }
 };
 
-export const toggleEmpathy = async (problemId, userId) => {
+export const toggleEmpathy = async (problemId, userId, userName) => {
   try {
     assert(problemId, 'problem/invalid-id');
     assert(userId, 'auth/unauthenticated');
@@ -84,6 +93,7 @@ export const toggleEmpathy = async (problemId, userId) => {
           empathy: nextCount,
           empathizedBy: nextArr,
         });
+        await deleteInappNotification(userId, 'empathy', problemId);  
         return { empathy: nextCount, empathizedBy: nextArr, empathized: false };
       } else {
         const nextArr = [...(problem.empathizedBy || []), userId];
@@ -91,6 +101,13 @@ export const toggleEmpathy = async (problemId, userId) => {
         await updateDoc(docRef, {
           empathy: nextCount,
           empathizedBy: nextArr,
+        });
+        await addInappNotification({
+          recipientId: problem.userId,
+          type: 'empathy',
+          problemId: problemId,
+          actorId: userId,
+          actorName: userName,
         });
         return { empathy: nextCount, empathizedBy: nextArr, empathized: true };
       }

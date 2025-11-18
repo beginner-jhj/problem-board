@@ -14,6 +14,7 @@ export default function Profile() {
     const [error, setError] = useState("");
     const [password, setPassword] = useState("");
     const [deleteAccount, setDeleteAccount] = useState(false);
+    const [deletingAccount, setDeletingAccount] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -122,15 +123,18 @@ export default function Profile() {
                                 className="btn btn-warn w-full md:w-auto"
                                 onClick={async () => {
                                     try {
+                                        setDeletingAccount(true);
                                         await deleteAccountWithReauth(password);
                                         setDeleteAccount(false);
                                         navigate("/login");
                                     } catch (err) {
                                         setError(getErrorMessage(err));
+                                    } finally {
+                                        setDeletingAccount(false);
                                     }
                                 }}
                             >
-                                Confirm Delete
+                                {deletingAccount ? 'Deleting...' : 'Confirm Delete'}
                             </button>
                             <button
                                 className="btn w-full md:w-auto"
